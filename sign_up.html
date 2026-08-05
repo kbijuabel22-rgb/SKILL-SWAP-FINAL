@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" style="color-scheme: dark; background:#06040f">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sign Up - SkillSwap</title>
+    <script>
+        // Redirect 127.0.0.1 to localhost for Firebase Auth OAuth compliance
+        if (window.location.hostname === '127.0.0.1') {
+            window.location.hostname = 'localhost';
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="webgl_bg.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#675df9",
+                        "on-surface": "#f3effc",
+                        surface: "rgba(24, 20, 36, 0.45)",
+                        "surface-variant": "rgba(40, 35, 60, 0.45)",
+                        "outline": "#777587",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "title-md": ["Inter"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(24, 20, 36, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-transparent text-[#f3effc] font-body-md min-h-screen flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-8 rounded-2xl flex flex-col gap-6 shadow-2xl mx-4 my-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-primary mb-2">Create Account</h2>
+            <p class="text-[#c7c4d8] font-medium">Join SkillSwap and start sharing skills.</p>
+        </div>
+
+        <div id="auth-error" class="hidden text-error bg-error-container p-3 rounded-lg text-sm font-medium"></div>
+
+        <form id="sign-up-form" class="flex flex-col gap-4">
+            <div>
+                <label class="block text-sm font-bold mb-1">Full Name</label>
+                <input type="text" id="profile-name" required class="w-full bg-[#1b172e] border border-outline rounded-lg px-4 py-3 text-[#f3effc] focus:outline-none focus:border-primary focus:ring-0" placeholder="Jane Doe" />
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-on-surface mb-1">Email</label>
+                <input type="email" id="auth-email" required class="w-full bg-[#1b172e] border border-outline rounded-lg px-4 py-3 text-[#f3effc] focus:outline-none focus:border-primary focus:ring-0" placeholder="student@university.edu" />
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-on-surface mb-1">Password</label>
+                <input type="password" id="auth-password" required class="w-full bg-[#1b172e] border border-outline rounded-lg px-4 py-3 text-[#f3effc] focus:outline-none focus:border-primary focus:ring-0" placeholder="••••••••" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1">College/University</label>
+                <input type="text" id="profile-college" required class="w-full bg-[#1b172e] border border-outline rounded-lg px-4 py-3 text-[#f3effc] focus:outline-none focus:border-primary focus:ring-0" placeholder="e.g. IIT Bombay" />
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1">Major</label>
+                <input type="text" id="profile-major" required class="w-full bg-[#1b172e] border border-outline rounded-lg px-4 py-3 text-[#f3effc] focus:outline-none focus:border-primary focus:ring-0" placeholder="e.g. Computer Science" />
+            </div>
+
+            <button type="submit" id="auth-submit-btn" class="w-full bg-primary hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+                <span>Sign Up</span>
+                <span class="material-symbols-outlined text-[18px]">person_add</span>
+            </button>
+        </form>
+
+        <div class="text-center mt-2">
+            <a href="sign_in.html" class="text-primary hover:underline text-sm font-medium block">
+                Already have an account? Sign In.
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { initializeFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
+            authDomain: "skill-swap-13607.firebaseapp.com",
+            projectId: "skill-swap-13607",
+            storageBucket: "skill-swap-13607.firebasestorage.app",
+            messagingSenderId: "1084945079828",
+            appId: "1:1084945079828:web:2e4f6804050cd2c6a19101"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Force long-polling to bypass strict network firewalls causing offline hangs
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
+        });
+
+        const errorDiv = document.getElementById('auth-error');
+
+        const getFriendlyErrorMessage = (error) => {
+            const code = error.code || "";
+            if (code === 'auth/email-already-in-use') return "This email is already in use. Please sign in instead.";
+            if (code === 'auth/weak-password') return "Password should be at least 6 characters.";
+            if (code === 'auth/invalid-email') return "Please enter a valid email address.";
+            if (error.message && error.message.includes('permission-denied')) return "Database access denied. Please ensure your Firestore Security Rules are set up correctly.";
+            return error.message || "An unknown error occurred.";
+        };
+
+        document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.classList.add('hidden');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Saving...</span>';
+
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const name = document.getElementById('profile-name').value;
+            const role = 'student';
+            const college = document.getElementById('profile-college').value;
+            const major = document.getElementById('profile-major').value;
+
+            try {
+                console.log(`[Auth] Attempting signup for email: ${email}`);
+                // 1. Create User in Firebase Auth
+                await setPersistence(auth, browserSessionPersistence);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log(`[Auth] Signup successful. UID: ${user.uid}. Creating Firestore profile...`);
+
+                // 2. Save profile in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: name,
+                    userType: role,
+                    college: college,
+                    major: major,
+                    createdAt: new Date().toISOString()
+                });
+
+                // 3. Redirect to dashboard
+                console.log(`[Auth] Profile saved. Redirecting to dashboard...`);
+                window.location.href = 'student_dashboard.html';
+
+            } catch (error) {
+                console.error("[Signup Error]", error);
+                errorDiv.textContent = getFriendlyErrorMessage(error);
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Sign Up</span><span class="material-symbols-outlined text-[18px]">person_add</span>';
+            }
+        });
+    </script>
+</body>
+</html>

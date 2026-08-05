@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" style="background:#06040f">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Edit Profile - SkillSwap</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="webgl_bg.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "rgba(15, 12, 22, 0.5)",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#c7c4d8",
+                        "tertiary-container": "#008645",
+                        "on-secondary-fixed-variant": "#004e5b",
+                        "on-tertiary-container": "#f6fff4",
+                        "outline": "#777587",
+                        "tertiary": "#006a35",
+                        "background": "transparent",
+                        "primary": "#675df9",
+                        "secondary-container": "#004e5b",
+                        "surface-container-high": "rgba(45, 38, 65, 0.45)",
+                        "secondary": "#58d6f1",
+                        "secondary-fixed": "#a7edff",
+                        "on-surface": "#f3effc",
+                        "on-secondary-container": "#ffffff",
+                        "on-background": "#f3effc",
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#100069",
+                        "surface-container-highest": "rgba(60, 52, 85, 0.5)",
+                        "surface-tint": "#4f44e2",
+                        "inverse-surface": "#302f39",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001f25",
+                        "surface": "rgba(24, 20, 36, 0.45)",
+                        "on-primary-container": "#fffbff",
+                        "tertiary-fixed": "#6bfe9c",
+                        "surface-variant": "rgba(40, 35, 60, 0.45)",
+                        "on-tertiary-fixed": "#00210c",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "rgba(20, 16, 30, 0.3)",
+                        "inverse-primary": "#c4c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "surface-bright": "rgba(50, 42, 75, 0.4)",
+                        "surface-container-lowest": "rgba(10, 8, 15, 0.25)",
+                        "error-container": "#ffdad6",
+                        "surface-container": "rgba(30, 25, 45, 0.4)",
+                        "on-primary-fixed-variant": "#3622ca",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#c4c0ff",
+                        "tertiary-fixed-dim": "#4ae183",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#e3dfff",
+                        "secondary-fixed-dim": "#58d6f1",
+                        "primary-container": "#675df9",
+                        "outline-variant": "rgba(255, 255, 255, 0.1)"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "container-max": "1280px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "badge-text": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "badge-text": ["13px", { "lineHeight": "16px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-primary {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+            background: rgba(24, 20, 36, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .custom-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f3effc;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-input:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: #675df9;
+            box-shadow: 0 0 0 2px rgba(103, 93, 249, 0.2);
+            outline: none;
+        }
+        .liquid-glass-button {
+            position: relative;
+            background: linear-gradient(180deg, rgba(103, 93, 249, 0.95) 0%, rgba(88, 214, 241, 0.85) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 15px rgba(103, 93, 249, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .liquid-glass-button:hover {
+            filter: brightness(1.15) contrast(1.05);
+            box-shadow: 0 6px 20px rgba(103, 93, 249, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        .liquid-glass-button:active {
+            filter: brightness(0.9) contrast(0.95);
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(103, 93, 249, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col" style="background: transparent;">
+<!-- TopNavBar -->
+<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+    <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
+        <div class="flex items-center gap-md">
+            <div class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</div>
+        </div>
+        <div class="hidden md:flex items-center gap-lg h-full">
+            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_dashboard.html">Dashboard</a>
+            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="match_discovery.html">Matches</a>
+            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="skill_gap_analyzer.html">Skill Gap</a>
+            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_portfolio.html">Portfolio</a>
+        </div>
+        <div class="flex items-center gap-sm">
+            <a href="edit_profile.html" class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary cursor-pointer hover:ring-2 hover:ring-primary transition-all block">
+                <img id="top-nav-avatar" alt="Student Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
+            </a>
+            <button id="logout-btn" class="p-2 ml-2 text-error hover:bg-error-container transition-all duration-200 rounded-full flex items-center justify-center" title="Logout">
+                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="flex flex-1 overflow-hidden">
+    <!-- SideNavBar -->
+    <aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
+        <div class="flex items-center gap-md mb-lg px-2">
+            <div class="w-12 h-12 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary font-extrabold text-xl shadow-inner border border-outline-variant">
+                SS
+            </div>
+            <div>
+                <h2 id="side-nav-college" class="font-title-md text-title-md text-primary font-bold">My College</h2>
+                <p class="font-label-caps text-label-caps text-on-surface-variant">Profile Settings</p>
+            </div>
+        </div>
+        <nav class="flex flex-col gap-xs flex-1">
+            <a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="student_dashboard.html">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-label-caps text-label-caps">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="match_discovery.html">
+                <span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+                <span class="font-label-caps text-label-caps">Matches</span>
+            </a>
+            <a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="skill_gap_analyzer.html">
+                <span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+                <span class="font-label-caps text-label-caps">Skill Gap</span>
+            </a>
+            <a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="student_portfolio.html">
+                <span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+                <span class="font-label-caps text-label-caps">Portfolio</span>
+            </a>
+            <a class="flex items-center gap-md px-4 py-3 bg-secondary-container dark:bg-secondary-fixed-dim text-on-secondary-container dark:text-on-secondary-fixed rounded-xl font-bold shadow-sm scale-102 hover:shadow-md transition-all" href="edit_profile.html">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+                <span class="font-label-caps text-label-caps">Edit Profile</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow lg:pl-64 min-h-screen pb-xl flex flex-col justify-start">
+        <div class="px-gutter py-md max-w-4xl w-full mx-auto flex flex-col gap-lg mt-6">
+            
+            <!-- Page Title -->
+            <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                <div>
+                    <h1 class="font-display-lg text-3xl font-extrabold text-on-surface flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-3xl">manage_accounts</span>
+                        Edit Profile
+                    </h1>
+                    <p class="text-on-surface-variant text-sm mt-1">Keep your SkillSwap credentials, college details, and skills updated.</p>
+                </div>
+                <a href="student_dashboard.html" class="flex items-center gap-2 text-primary hover:text-secondary transition-colors text-sm font-semibold">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Toast Alert -->
+            <div id="toast" class="hidden fixed bottom-6 right-6 z-50 glass-card border border-outline px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-md animate-bounce">
+                <span class="material-symbols-outlined text-secondary" id="toast-icon">check_circle</span>
+                <span class="text-on-surface text-sm font-semibold" id="toast-msg">Profile updated successfully!</span>
+            </div>
+
+            <!-- Profile Form Glass Card -->
+            <form id="edit-profile-form" class="glass-card rounded-2xl p-lg border border-outline-variant shadow-xl flex flex-col gap-lg">
+                
+                <!-- Avatar and URL Grid -->
+                <div class="flex flex-col md:flex-row items-center gap-lg border-b border-outline-variant/30 pb-lg">
+                    <div class="relative group">
+                        <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/40 group-hover:border-primary transition-all duration-300 shadow-xl bg-surface-container-high">
+                            <img id="avatar-preview" alt="Avatar Preview" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
+                        </div>
+                        <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span class="material-symbols-outlined text-white text-3xl">image</span>
+                        </div>
+                    </div>
+                    <div class="flex-grow w-full flex flex-col gap-sm">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">link</span>
+                            Profile Picture URL
+                        </label>
+                        <input id="profile-pic-input" type="url" class="custom-input rounded-xl px-4 py-3 w-full text-sm" placeholder="Paste image address URL..."/>
+                        <p class="text-xs text-on-surface-variant">Provide any public URL of an image (e.g. from Google Drive, LinkedIn, Gravatar, or Unsplash) to update your profile photo.</p>
+                    </div>
+                </div>
+
+                <!-- Input Fields Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                    <!-- Display Name -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">person</span>
+                            Full Name
+                        </label>
+                        <input id="profile-name-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="Enter your full name..."/>
+                    </div>
+                    <!-- LinkedIn URL -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">public</span>
+                            LinkedIn URL or ID
+                        </label>
+                        <input id="profile-linkedin-input" type="text" class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. https://www.linkedin.com/in/username..."/>
+                    </div>
+                    <!-- College Name -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">school</span>
+                            College Name
+                        </label>
+                        <input id="profile-college-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. IIT Bombay, TKM College..."/>
+                    </div>
+                    <!-- Major / Department -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">psychology</span>
+                            Major / Branch
+                        </label>
+                        <input id="profile-major-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. Computer Science, Mechanical Engineering..."/>
+                    </div>
+                </div>
+
+                <!-- Skills Management Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg border-t border-outline-variant/30 pt-lg">
+                    <!-- Skills to Teach -->
+                    <div class="flex flex-col gap-md">
+                        <div>
+                            <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm text-secondary">menu_book</span>
+                                Skills You Can Teach
+                            </label>
+                            <p class="text-xs text-on-surface-variant mt-1">Add subjects, tools, or skills you want to mentor peers on.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="teach-skill-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add teaching skill..."/>
+                            <button id="add-teach-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[18px]">add</span>
+                                Add
+                            </button>
+                        </div>
+                        <div id="teach-skills-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl">
+                            <!-- Tags injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Skills to Learn -->
+                    <div class="flex flex-col gap-md">
+                        <div>
+                            <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm text-tertiary-fixed">emoji_objects</span>
+                                Skills You Want to Learn
+                            </label>
+                            <p class="text-xs text-on-surface-variant mt-1">Specify topics or technical tools you'd like to be coached in.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="learn-skill-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add learning skill..."/>
+                            <button id="add-learn-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[18px]">add</span>
+                                Add
+                            </button>
+                        </div>
+                        <div id="learn-skills-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl">
+                            <!-- Tags injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit / Control Grid -->
+                <div class="flex justify-end gap-md border-t border-outline-variant/30 pt-lg mt-md">
+                    <a href="student_dashboard.html" class="px-6 py-3 border border-outline-variant hover:bg-white/5 text-on-surface font-semibold text-sm rounded-xl transition-colors flex items-center justify-center">
+                        Cancel
+                    </a>
+                    <button id="save-profile-btn" type="submit" class="liquid-glass-button text-white font-bold text-sm px-8 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">save</span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+</div>
+
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface-variant font-label-caps text-label-caps w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 flat no shadows">
+    <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
+        <div class="font-bold text-primary opacity-80 hover:opacity-100 transition-opacity">SkillSwap</div>
+        <div class="text-center opacity-80">© 2024 SkillSwap. Made for students, by students.</div>
+        <div class="flex gap-md flex-wrap justify-center">
+            <a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Partnerships</a>
+            <a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Language: English (IN)</a>
+            <a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy</a>
+            <a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { initializeFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
+        authDomain: "skill-swap-13607.firebaseapp.com",
+        projectId: "skill-swap-13607",
+        storageBucket: "skill-swap-13607.firebasestorage.app",
+        messagingSenderId: "1084945079828",
+        appId: "1:1084945079828:web:2e4f6804050cd2c6a19101",
+        databaseURL: "https://skill-swap-13607-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = initializeFirestore(app, {
+        experimentalForceLongPolling: true
+    });
+
+    let currentUserId = null;
+    let teachSkills = [];
+    let learnSkills = [];
+
+    // Live preview update for avatar
+    const avatarPreview = document.getElementById('avatar-preview');
+    const profilePicInput = document.getElementById('profile-pic-input');
+    profilePicInput.addEventListener('input', () => {
+        const val = profilePicInput.value.trim();
+        if (val) {
+            avatarPreview.src = val;
+        } else {
+            avatarPreview.src = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w';
+        }
+    });
+
+    // Protect route and load data
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            console.log("[Auth] Redirecting to login page");
+            window.location.href = 'index.html';
+            return;
+        }
+        currentUserId = user.uid;
+        console.log(`[EditProfile] Loaded page for user: ${user.uid}`);
+
+        // Set default values from Firebase Auth Object
+        document.getElementById('profile-name-input').value = user.displayName || "";
+        if (user.photoURL) {
+            profilePicInput.value = user.photoURL;
+            avatarPreview.src = user.photoURL;
+            document.getElementById('top-nav-avatar').src = user.photoURL;
+        }
+
+        // Fetch user from Firestore
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userDocRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                
+                document.getElementById('profile-name-input').value = userData.displayName || userData.name || user.displayName || "";
+                document.getElementById('profile-college-input').value = userData.college || "";
+                document.getElementById('profile-major-input').value = userData.major || "";
+                document.getElementById('profile-linkedin-input').value = userData.linkedinUrl || "";
+                
+                if (userData.college) {
+                    document.getElementById('side-nav-college').textContent = userData.college;
+                }
+
+                if (userData.photoURL || userData.photoUrl) {
+                    const pic = userData.photoURL || userData.photoUrl;
+                    profilePicInput.value = pic;
+                    avatarPreview.src = pic;
+                    document.getElementById('top-nav-avatar').src = pic;
+                }
+
+                // Load skills
+                teachSkills = userData.skillsToTeach || [];
+                learnSkills = userData.skillsToLearn || [];
+                renderSkills();
+            }
+        } catch (error) {
+            console.error("[EditProfile] Error loading user document:", error);
+            showToast("Error loading profile data from server", true);
+        }
+    });
+
+    // Rendering Skill Chips
+    function renderSkills() {
+        const teachContainer = document.getElementById('teach-skills-tags');
+        const learnContainer = document.getElementById('learn-skills-tags');
+
+        // Render Teach Skills
+        if (teachSkills.length === 0) {
+            teachContainer.innerHTML = `<span class="text-xs text-on-surface-variant/60 italic p-1">No skills added yet</span>`;
+        } else {
+            teachContainer.innerHTML = teachSkills.map((skill, index) => `
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary border border-secondary/30 text-xs font-semibold select-none">
+                    <span>${skill}</span>
+                    <button type="button" class="text-on-surface hover:text-error transition-colors flex items-center" onclick="removeTeachSkill(${index})">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Render Learn Skills
+        if (learnSkills.length === 0) {
+            learnContainer.innerHTML = `<span class="text-xs text-on-surface-variant/60 italic p-1">No skills added yet</span>`;
+        } else {
+            learnContainer.innerHTML = learnSkills.map((skill, index) => `
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/20 text-primary border border-primary/30 text-xs font-semibold select-none">
+                    <span>${skill}</span>
+                    <button type="button" class="text-on-surface hover:text-error transition-colors flex items-center" onclick="removeLearnSkill(${index})">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Bind window functions so onclick events in innerHTML can execute them
+    window.removeTeachSkill = (index) => {
+        teachSkills.splice(index, 1);
+        renderSkills();
+    };
+
+    window.removeLearnSkill = (index) => {
+        learnSkills.splice(index, 1);
+        renderSkills();
+    };
+
+    // Add Teach Skill button click
+    document.getElementById('add-teach-btn').addEventListener('click', () => {
+        const input = document.getElementById('teach-skill-input');
+        const skill = input.value.trim();
+        if (skill && !teachSkills.includes(skill)) {
+            teachSkills.push(skill);
+            input.value = '';
+            renderSkills();
+        }
+    });
+
+    // Add Learn Skill button click
+    document.getElementById('add-learn-btn').addEventListener('click', () => {
+        const input = document.getElementById('learn-skill-input');
+        const skill = input.value.trim();
+        if (skill && !learnSkills.includes(skill)) {
+            learnSkills.push(skill);
+            input.value = '';
+            renderSkills();
+        }
+    });
+
+    // Press Enter to add skills
+    document.getElementById('teach-skill-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('add-teach-btn').click();
+        }
+    });
+    document.getElementById('learn-skill-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('add-learn-btn').click();
+        }
+    });
+
+    // Toast alert helper
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toast-icon');
+        const msg = document.getElementById('toast-msg');
+
+        msg.textContent = message;
+        if (isError) {
+            icon.textContent = 'error';
+            icon.className = 'material-symbols-outlined text-error';
+        } else {
+            icon.textContent = 'check_circle';
+            icon.className = 'material-symbols-outlined text-secondary';
+        }
+
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Save profile form submission
+    document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentUserId) return;
+
+        const saveBtn = document.getElementById('save-profile-btn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span> Saving...';
+
+        const displayName = document.getElementById('profile-name-input').value.trim();
+        const college = document.getElementById('profile-college-input').value.trim();
+        const major = document.getElementById('profile-major-input').value.trim();
+        const linkedinUrl = document.getElementById('profile-linkedin-input').value.trim();
+        const photoURL = profilePicInput.value.trim();
+
+        try {
+            // 1. Update Auth User details
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: displayName,
+                    photoURL: photoURL || null
+                });
+            }
+
+            // 2. Update Firestore profile document
+            const userDocRef = doc(db, 'users', currentUserId);
+            await setDoc(userDocRef, {
+                uid: currentUserId,
+                displayName: displayName,
+                name: displayName,
+                college: college,
+                major: major,
+                linkedinUrl: linkedinUrl,
+                photoURL: photoURL || null,
+                skillsToTeach: teachSkills,
+                skillsToLearn: learnSkills,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            showToast("Profile changes saved successfully!");
+
+            // Update local header UI immediately
+            document.getElementById('top-nav-avatar').src = photoURL || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w';
+            document.getElementById('side-nav-college').textContent = college;
+
+            // Wait a brief moment to show success message and then redirect
+            setTimeout(() => {
+                window.location.href = 'student_dashboard.html';
+            }, 1200);
+
+        } catch (error) {
+            console.error("[EditProfile] Save changes failed:", error);
+            showToast("Failed to save changes: " + error.message, true);
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">save</span> Save Changes';
+        }
+    });
+
+    // Logout Button
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = 'index.html';
+        });
+    });
+</script>
+</body>
+</html>

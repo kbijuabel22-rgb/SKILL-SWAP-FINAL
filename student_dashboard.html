@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en" style="background:#06040f"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Dashboard - SkillSwap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="webgl_bg.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "rgba(15, 12, 22, 0.5)",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#c7c4d8",
+                        "tertiary-container": "#008645",
+                        "on-secondary-fixed-variant": "#004e5b",
+                        "on-tertiary-container": "#f6fff4",
+                        "outline": "#777587",
+                        "tertiary": "#006a35",
+                        "background": "transparent",
+                        "primary": "#675df9",
+                        "secondary-container": "#004e5b",
+                        "surface-container-high": "rgba(45, 38, 65, 0.45)",
+                        "secondary": "#58d6f1",
+                        "secondary-fixed": "#a7edff",
+                        "on-surface": "#f3effc",
+                        "on-secondary-container": "#ffffff",
+                        "on-background": "#f3effc",
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#100069",
+                        "surface-container-highest": "rgba(60, 52, 85, 0.5)",
+                        "surface-tint": "#4f44e2",
+                        "inverse-surface": "#302f39",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001f25",
+                        "surface": "rgba(24, 20, 36, 0.45)",
+                        "on-primary-container": "#fffbff",
+                        "tertiary-fixed": "#6bfe9c",
+                        "surface-variant": "rgba(40, 35, 60, 0.45)",
+                        "on-tertiary-fixed": "#00210c",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "rgba(20, 16, 30, 0.3)",
+                        "inverse-primary": "#c4c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "surface-bright": "rgba(50, 42, 75, 0.4)",
+                        "surface-container-lowest": "rgba(10, 8, 15, 0.25)",
+                        "error-container": "#ffdad6",
+                        "surface-container": "rgba(30, 25, 45, 0.4)",
+                        "on-primary-fixed-variant": "#3622ca",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#c4c0ff",
+                        "tertiary-fixed-dim": "#4ae183",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#e3dfff",
+                        "secondary-fixed-dim": "#58d6f1",
+                        "primary-container": "#675df9",
+                        "outline-variant": "rgba(255, 255, 255, 0.1)"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "container-max": "1280px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "badge-text": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "badge-text": ["13px", { "lineHeight": "16px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .gradient-primary {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+            background: rgba(24, 20, 36, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col" style="background: transparent;">
+<!-- TopNavBar -->
+<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
+<div class="flex items-center gap-md">
+<!-- Mobile Menu Button -->
+<button class="md:hidden p-2 text-on-surface-variant hover:bg-primary-container/20 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</div>
+</div>
+<!-- Web Navigation Cluster -->
+<div class="hidden md:flex items-center gap-lg h-full">
+<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-primary dark:text-inverse-primary font-bold border-b-2 border-primary hover:bg-primary-container/20 transition-all duration-200" href="student_dashboard.html">Dashboard</a>
+<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="match_discovery.html">Matches</a>
+<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="skill_gap_analyzer.html">Skill Gap</a>
+<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_portfolio.html">Portfolio</a>
+
+</div>
+<div class="flex items-center gap-sm">
+<div class="relative" id="notifications-wrapper">
+<button id="bell-btn" class="relative p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span id="notification-badge" class="absolute top-0 right-0 bg-error text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+</button>
+
+<!-- Dropdown -->
+<div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-surface-container-high border border-outline-variant rounded-xl shadow-lg flex flex-col overflow-hidden opacity-0 pointer-events-none transition-all duration-200 transform scale-95 origin-top-right z-50">
+    <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-highest">
+        <h3 class="font-title-md text-sm font-bold text-on-surface">Notifications</h3>
+    </div>
+    <div id="notifications-list" class="max-h-64 overflow-y-auto p-2 flex flex-col gap-1 hide-scrollbar">
+        <div class="p-4 text-center text-sm text-on-surface-variant opacity-70">No new notifications</div>
+    </div>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+</button>
+<button class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</button>
+<a href="edit_profile.html" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-sm cursor-pointer hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
+<img id="top-nav-avatar" alt="Student avatar with status" class="w-full h-full object-cover" data-alt="A close-up portrait of a young Indian male college student with short dark hair, wearing a casual light grey hoodie. He is outdoors on a bright campus with blurred greenery in the background, lit softly by natural daylight. His expression is confident and approachable, fitting a modern student social platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
+</a>
+<button id="logout-btn" class="p-2 ml-2 text-error hover:bg-error-container transition-all duration-200 rounded-full flex items-center justify-center title='Logout'">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</button>
+</div>
+</div>
+</nav>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
+<div class="flex items-center gap-md mb-lg px-2">
+<img alt="Campus Logo" class="w-12 h-12 rounded-lg object-cover" data-alt="A stylized logo for a fictional university department. It features a modern geometric crest in deep indigo and bright cyan on a crisp white background. The design is clean, corporate-academic, and highly professional, suggesting an engineering or computer science focus. The lighting is neutral studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrsiv54f6J8jZA8L-X5__3MdKM4sWfi2_Z59wyrF12qf7YAEdqhuLUKJcsAy4UheSIdZFF9iS_tnlCbxzKp-ebpV36wupzjYt8HPbKCYeOCq3bPEhcAFCy0MWiuKB_DDwW3VIDapAowExUEbRB82rqLqJCHvW5F79yrIWXg5X2iObMDtEfFbAReHa9Dryq7FcuMLelAIOoZamF_XrHepSXoZlJNDBq0cj-vXHtOosKYjLQlq9KSs5nTdU9ywUrzMXE5s4kiVP7o5U"/>
+<div>
+<h2 class="font-title-md text-title-md text-primary font-bold">IIT Bombay</h2>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Computer Science Dept.</p>
+</div>
+</div>
+<nav class="flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-md px-4 py-3 bg-secondary-container dark:bg-secondary-fixed-dim text-on-secondary-container dark:text-on-secondary-fixed rounded-xl font-bold shadow-sm scale-102 hover:shadow-md transition-all" href="student_dashboard.html">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="match_discovery.html">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="font-label-caps text-label-caps">Matches</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="skill_gap_analyzer.html">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-label-caps text-label-caps">Skill Gap</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="student_portfolio.html">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="font-label-caps text-label-caps">Portfolio</span>
+</a>
+
+</nav>
+<button onclick="window.location.href='teach_skill.html'" class="mt-auto gradient-primary text-on-primary font-title-md text-title-md py-3 rounded-xl shadow-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2"><span class="material-symbols-outlined">school</span> Teach Skill</button>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 lg:ml-64 p-4 md:p-gutter overflow-y-auto max-w-container-max mx-auto w-full">
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Center Feed Area (Spans 8 cols on XL) -->
+<div class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- Hero Section -->
+<section class="glass-card rounded-xl p-md md:p-lg flex flex-col md:flex-row items-center justify-between gap-md relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute -right-20 -top-20 w-64 h-64 rounded-full gradient-primary opacity-10 blur-3xl"></div>
+<div class="z-10 w-full md:w-auto">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-sm">Welcome back, <span class="text-gradient" id="dashboard-welcome-name">there!</span></h1>
+<p class="text-on-surface-variant font-body-md text-body-md mb-md max-w-md">Your next scheduled swap is tomorrow at 2:00 PM. You're making great progress this semester.</p>
+<div class="flex flex-wrap gap-sm">
+<div class="bg-surface border border-primary/20 rounded-lg p-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Current Level</div>
+<div class="font-badge-text text-badge-text text-primary">120 ⚡ Apprentice</div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-tertiary" data-icon="event">event</span>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Next Swap</div>
+<div class="font-badge-text text-badge-text text-tertiary">UX Review (Tom, 2pm)</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress Circle Graphic (Simulated) -->
+<div class="relative w-32 h-32 flex-shrink-0 z-10 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="#e4e1ee" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="none" r="45" stroke="url(#gradient)" stroke-dasharray="282.7" stroke-dashoffset="70" stroke-width="8"></circle>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#4d41df"></stop>
+<stop offset="100%" stop-color="#69e5ff"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-title-md text-title-md text-primary font-bold">75%</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">to Master</span>
+</div>
+</div>
+</section>
+<!-- Quick Actions Bento -->
+<section>
+<h2 class="font-title-md text-title-md mb-sm text-on-surface">Quick Actions</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-sm">
+<button onclick="window.location.href='match_discovery.html'" class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-sm hover:border-primary hover:shadow-sm transition-all group h-32">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<span class="font-badge-text text-badge-text text-center">Browse Matches</span>
+</button>
+<button onclick="window.location.href='skill_gap_analyzer.html'" class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-sm hover:border-primary hover:shadow-sm transition-all group h-32">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 text-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="radar">radar</span>
+</div>
+<span class="font-badge-text text-badge-text text-center">Run Skill Gap</span>
+</button>
+<button class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-sm hover:border-primary hover:shadow-sm transition-all group h-32">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/10 text-tertiary flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+</div>
+<span class="font-badge-text text-badge-text text-center">Update Availability</span>
+</button>
+<button class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-sm hover:border-primary hover:shadow-sm transition-all group h-32">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</div>
+<span class="font-badge-text text-badge-text text-center">Post Request</span>
+</button>
+</div>
+</section>
+<!-- Current Swaps Section -->
+<section>
+<div class="flex justify-between items-center mb-sm">
+<h2 class="font-title-md text-title-md text-on-surface">Current Swaps</h2>
+<a class="font-label-caps text-label-caps text-primary hover:underline" href="#">View All</a>
+</div>
+<div id="current-swaps-container" class="flex flex-col gap-sm">
+<!-- Javascript will inject current swaps here -->
+</div>
+</section>
+</div>
+<!-- Right Utility Rail (Spans 4 cols on XL) -->
+<div class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Campus Stats Widget -->
+<section class="bg-surface rounded-xl p-md border border-outline-variant shadow-[0_4px_20px_rgba(108,99,255,0.04)]">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" data-icon="school">school</span>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface">Campus Stats</h2>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-md">Top Learners @ TKM College</p>
+<div id="campus-stats-container" class="flex flex-col gap-sm">
+<!-- Javascript will inject campus stats here -->
+</div>
+</section>
+<!-- Suggested Skills Widget -->
+<section class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm">
+<h2 class="font-title-md text-title-md text-on-surface mb-sm">Trending Skills</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-md">High demand in your network</p>
+<div id="trending-skills-container" class="flex flex-wrap gap-xs">
+<!-- Javascript will inject trending skills here -->
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface-variant font-label-caps text-label-caps w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 flat no shadows">
+<div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
+<div class="font-bold text-primary opacity-80 hover:opacity-100 transition-opacity">SkillSwap</div>
+<div class="text-center opacity-80">© 2024 SkillSwap. Made for students, by students.</div>
+<div class="flex gap-md flex-wrap justify-center">
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Partnerships</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Language: English (IN)</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms</a>
+</div>
+</div>
+</footer>
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { initializeFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
+            authDomain: "skill-swap-13607.firebaseapp.com",
+            projectId: "skill-swap-13607",
+            storageBucket: "skill-swap-13607.firebasestorage.app",
+            messagingSenderId: "1084945079828",
+            appId: "1:1084945079828:web:2e4f6804050cd2c6a19101",
+            databaseURL: "https://skill-swap-13607-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const rtdb = getDatabase(app);
+        
+        // Force long-polling to bypass strict network firewalls causing offline hangs
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
+        });
+
+        // Protect route and load data
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                console.log("[Auth] No user found, redirecting to login");
+                window.location.href = 'index.html';
+                return;
+            }
+            console.log(`[Dashboard] User authenticated: ${user.uid}`);
+            
+            // Set initial values from auth object
+            const displayName = user.displayName || 'Aarav Patel';
+            const firstName = displayName.split(' ')[0];
+            document.title = `${firstName}'s Dashboard - SkillSwap`;
+            document.getElementById('dashboard-welcome-name').textContent = firstName + "!";
+            
+            const campusStatsName = document.getElementById('campus-stats-user-name');
+            if (campusStatsName) campusStatsName.textContent = `You (${firstName})`;
+
+            const topNavAvatar = document.getElementById('top-nav-avatar');
+            if (topNavAvatar && user.photoURL) topNavAvatar.src = user.photoURL;
+
+            const campusStatsAvatar = document.getElementById('campus-stats-user-avatar');
+            if (campusStatsAvatar && user.photoURL) campusStatsAvatar.src = user.photoURL;
+            
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.name) {
+                        const name = userData.name;
+                        const dbFirstName = name.split(' ')[0];
+                        document.title = `${dbFirstName}'s Dashboard - SkillSwap`;
+                        document.getElementById('dashboard-welcome-name').textContent = dbFirstName + "!";
+                        if (campusStatsName) campusStatsName.textContent = `You (${dbFirstName})`;
+                    }
+                    if (userData.photoURL) {
+                        if (topNavAvatar) topNavAvatar.src = userData.photoURL;
+                        if (campusStatsAvatar) campusStatsAvatar.src = userData.photoURL;
+                    }
+                } else {
+                    console.log("[Dashboard] User document missing. Continuing with default profile view.");
+                }
+            } catch (error) {
+                console.error("[Dashboard] Error fetching user profile:", error);
+                console.log("Skipping profile requirement due to Firestore error.");
+            }
+
+            // Real-time listener for unread chat notifications
+            const notifBadge = document.getElementById('notification-badge');
+            const notifList = document.getElementById('notifications-list');
+            
+            if (notifBadge && notifList) {
+                onValue(ref(rtdb, `unread/${user.uid}`), async (snap) => {
+                    let totalUnread = 0;
+                    let dropdownHTML = '';
+                    
+                    if (snap.exists()) {
+                        snap.forEach((childSnap) => {
+                            const chatData = childSnap.val();
+                            const chatId = childSnap.key;
+                            if (chatData && chatData.count > 0) {
+                                totalUnread += chatData.count;
+                                
+                                // Extract the other user's ID from chatId
+                                const ids = chatId.split('_');
+                                const partnerId = ids[0] === user.uid ? ids[1] : ids[0];
+                                
+                                dropdownHTML += `
+                                    <div class="p-3 rounded-lg bg-surface-container-highest hover:bg-surface-container-lowest cursor-pointer transition-colors border border-outline-variant flex items-center justify-between" onclick="window.location.href='chat.html?targetUserId=${partnerId}'">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full gradient-primary text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                <span class="material-symbols-outlined text-[16px]">chat</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm text-on-surface font-semibold">New message request!</div>
+                                                <div class="text-xs text-on-surface-variant">${chatData.count} unread message(s)</div>
+                                            </div>
+                                        </div>
+                                        <span class="bg-primary text-white text-[10px] px-2 py-1 rounded-full font-bold">Open</span>
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    if (totalUnread > 0) {
+                        notifBadge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                        notifBadge.classList.remove('hidden');
+                        notifList.innerHTML = dropdownHTML;
+                    } else {
+                        notifBadge.classList.add('hidden');
+                        notifList.innerHTML = '<div class="p-4 text-center text-sm text-on-surface-variant opacity-70">No new notifications</div>';
+                    }
+                });
+            }
+
+            // Bell Dropdown Toggle Logic
+            const bellBtn = document.getElementById('bell-btn');
+            const notifDropdown = document.getElementById('notifications-dropdown');
+            if (bellBtn && notifDropdown) {
+                bellBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isHidden = notifDropdown.classList.contains('opacity-0');
+                    if (isHidden) {
+                        notifDropdown.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+                        notifDropdown.classList.add('opacity-100', 'scale-100');
+                    } else {
+                        notifDropdown.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                        notifDropdown.classList.remove('opacity-100', 'scale-100');
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!notifDropdown.contains(e.target) && e.target !== bellBtn) {
+                        notifDropdown.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                        notifDropdown.classList.remove('opacity-100', 'scale-100');
+                    }
+                });
+            }
+
+            // Fetch live data for Swaps, Stats, and Trending Skills
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const swapsContainer = document.getElementById('current-swaps-container');
+                const statsContainer = document.getElementById('campus-stats-container');
+                const trendingContainer = document.getElementById('trending-skills-container');
+                
+                let allSkills = {};
+                let userStats = [];
+                let swapsHTML = '';
+                
+                usersSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (docSnap.id === user.uid) return; // skip self
+                    
+                    const name = data.displayName || data.name || 'Student';
+                    const college = data.college || 'College';
+                    const teach = data.skillsToTeach || [];
+                    const learn = data.skillsToLearn || [];
+                    
+                    // Aggregate skills
+                    teach.forEach(s => {
+                        allSkills[s] = (allSkills[s] || 0) + 1;
+                    });
+                    learn.forEach(s => {
+                        allSkills[s] = (allSkills[s] || 0) + 1;
+                    });
+                    
+                    // Calculate "points" for leaderboard mock based on skills count
+                    const points = (teach.length * 50) + (learn.length * 20) + Math.floor(Math.random() * 100);
+                    userStats.push({ name, points });
+
+                    // Generate a random swap card if they have skills
+                    if (teach.length > 0 && Math.random() > 0.5 && swapsHTML.length < 2000) {
+                        const skill = teach[0];
+                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+                        const avatarHTML = data.photoURL ? 
+                            `<img src="${data.photoURL}" alt="${name}" class="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-sm" />` : 
+                            `<div class="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold shadow-sm">${initials}</div>`;
+                            
+                        swapsHTML += `
+<div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+<div class="flex flex-col md:flex-row justify-between gap-md">
+<div class="flex items-start gap-md">
+${avatarHTML}
+<div>
+<div class="flex items-center gap-xs mb-xs">
+<h3 class="font-title-md text-title-md text-on-surface text-base">${name}</h3>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px]">${college}</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm">Teaching ${skill}</p>
+</div>
+</div>
+<div class="flex flex-row md:flex-col justify-end gap-sm md:gap-xs mt-sm md:mt-0">
+<button onclick="window.location.href='chat.html?targetUserId=${docSnap.id}'" class="bg-surface text-primary border border-primary px-4 py-2 rounded-lg font-badge-text text-badge-text hover:bg-primary-container/10 transition-colors flex items-center justify-center gap-2">
+    <span class="material-symbols-outlined text-sm">chat</span> Chat
+</button>
+</div>
+</div>
+</div>`;
+                    }
+                });
+                
+                if (swapsContainer && swapsHTML) {
+                    swapsContainer.innerHTML = swapsHTML;
+                } else if (swapsContainer) {
+                    swapsContainer.innerHTML = '<p class="text-on-surface-variant">No active swaps right now. Go to Matches to find peers!</p>';
+                }
+                
+                // Populate Trending Skills
+                if (trendingContainer) {
+                    const sortedSkills = Object.entries(allSkills).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                    const colors = ['#0077B6', '#FB5607', '#9D4EDD', '#008645', '#4f44e2'];
+                    if (sortedSkills.length > 0) {
+                        trendingContainer.innerHTML = sortedSkills.map((s, i) => {
+                            const c = colors[i % colors.length];
+                            return `<span style="background:${c}1a; color:${c}; border-color:${c}33" class="px-3 py-1.5 rounded-full font-label-caps text-label-caps border cursor-pointer transition-colors">${s[0]}</span>`;
+                        }).join('');
+                    } else {
+                        trendingContainer.innerHTML = '<span class="text-on-surface-variant text-sm">Add skills to see trends!</span>';
+                    }
+                }
+                
+                // Populate Campus Stats
+                if (statsContainer) {
+                    userStats.sort((a,b) => b.points - a.points);
+                    statsContainer.innerHTML = userStats.slice(0,3).map((u, i) => `
+<div class="flex items-center justify-between p-sm rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex items-center gap-sm">
+<div class="font-badge-text text-badge-text text-on-surface-variant w-4 text-center">${i+1}</div>
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${u.name.charAt(0)}</div>
+<span class="font-body-md text-body-md text-on-surface text-sm font-semibold">${u.name}</span>
+</div>
+<span class="font-badge-text text-badge-text text-primary group-hover:scale-110 transition-transform">${u.points} ⚡</span>
+</div>
+                    `).join('');
+                }
+
+            } catch (err) {
+                console.error("Error fetching dashboard live data:", err);
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body></html>

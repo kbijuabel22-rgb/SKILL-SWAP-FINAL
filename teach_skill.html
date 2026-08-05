@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en" style="background:#06040f">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>SkillSwap - Teach Skill</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="webgl_bg.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "rgba(15, 12, 22, 0.5)",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#c7c4d8",
+                        "tertiary-container": "#008645",
+                        "on-secondary-fixed-variant": "#004e5b",
+                        "on-tertiary-container": "#f6fff4",
+                        "outline": "#777587",
+                        "tertiary": "#006a35",
+                        "background": "transparent",
+                        "primary": "#675df9",
+                        "secondary-container": "#004e5b",
+                        "surface-container-high": "rgba(45, 38, 65, 0.45)",
+                        "secondary": "#58d6f1",
+                        "secondary-fixed": "#a7edff",
+                        "on-surface": "#f3effc",
+                        "on-secondary-container": "#ffffff",
+                        "on-background": "#f3effc",
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#100069",
+                        "surface-container-highest": "rgba(60, 52, 85, 0.5)",
+                        "surface-tint": "#4f44e2",
+                        "inverse-surface": "#302f39",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001f25",
+                        "surface": "rgba(24, 20, 36, 0.45)",
+                        "on-primary-container": "#fffbff",
+                        "tertiary-fixed": "#6bfe9c",
+                        "surface-variant": "rgba(40, 35, 60, 0.45)",
+                        "on-tertiary-fixed": "#00210c",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "rgba(20, 16, 30, 0.3)",
+                        "inverse-primary": "#c4c0ff",
+                        "inverse-on-surface": "#f3effc",
+                        "surface-bright": "rgba(50, 42, 75, 0.4)",
+                        "surface-container-lowest": "rgba(10, 8, 15, 0.25)",
+                        "error-container": "#ffdad6",
+                        "surface-container": "rgba(30, 25, 45, 0.4)",
+                        "on-primary-fixed-variant": "#3622ca",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#c4c0ff",
+                        "tertiary-fixed-dim": "#4ae183",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#e3dfff",
+                        "secondary-fixed-dim": "#58d6f1",
+                        "primary-container": "#675df9",
+                        "outline-variant": "rgba(255, 255, 255, 0.1)"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "24px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "container-max": "1280px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "badge-text": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "badge-text": ["13px", { "lineHeight": "16px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-primary {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+        }
+
+        .text-gradient-primary {
+            background: linear-gradient(135deg, #675df9 0%, #58d6f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(24, 20, 36, 0.45);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md" style="background: transparent;">
+    <!-- TopNavBar -->
+    <header
+        class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none hidden md:block">
+        <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
+            <div class="flex items-center gap-md">
+                <span
+                    class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
+                <div class="relative hidden lg:block">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input
+                        class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary text-body-md font-body-md text-on-surface w-64"
+                        placeholder="Search skills, users..." type="text" />
+                </div>
+            </div>
+            <div class="flex items-center gap-sm">
+                <button
+                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <button
+                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+                    <span class="material-symbols-outlined">workspace_premium</span>
+                </button>
+                <button
+                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                </button>
+                <img alt="Student avatar with status"
+                    class="w-8 h-8 rounded-full ml-sm object-cover border-2 border-primary"
+                    data-alt="A small circular avatar of a college student smiling warmly. High quality, professional headshot in a campus setting. Modern lighting, clean background. Corporate yet youthful vibe."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV0gZ52ZN2yeM--8nKWCP-u73J0X5Gi84RX-V7wwCyqiBacamxPLQfN3zkT5UySjRj1bNbjdHybXS63QunfgICyhs3Xo1HbJ6jqSpN-9KH2acrt_MYOZSUcOCZK36GSNgf67ReQ_lZdAM3zlgGlpZrOErT5dGGE-cYQkWT_RCzOyW-8poowJk-oFC_ICswRPS78v4WJB86YkU-XTd53q8gMDg8bxI2d0I1NV0nDGhSEENa4_ijfu35WN4wnv3a8-hCHLXfRq6OJL4" />
+            </div>
+        </div>
+    </header>
+    <!-- Mobile Top Header (Fallback) -->
+    <header class="md:hidden bg-surface p-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <span class="font-title-md text-title-md font-extrabold text-primary tracking-tight">SkillSwap</span>
+        <img alt="Student avatar" class="w-8 h-8 rounded-full object-cover border border-outline"
+            data-alt="A small circular avatar of a college student smiling warmly. High quality, professional headshot in a campus setting. Modern lighting, clean background. Corporate yet youthful vibe."
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtcM1NRTE7YvpysWKkBSt6P3AIkIdw4SPWJW6CsT_hR2xNtA8-zDOjO7UTU4z4tiegpQc19TLWBRSaBslDTOV-5gLseIaHdB2D1DbJstGwvQS1B1kDXCUwAdMb1WtERi1_iznK4F1HV3tvKrbcYpzdywZn3mZDGRzuVyT8zRyI_fzQkCcXtcqLxN7ad2_BEBNBE2X6D_E3uGhLarKR5owsDhFmPV1oJnngdqTAMZbf0lDf1cC_NEOxoMXJi6mrO7mQtoc7xx_AD3U" />
+    </header>
+    <div class="flex flex-1 max-w-container-max mx-auto w-full relative">
+        <!-- SideNavBar -->
+        <aside
+            class="bg-surface dark:bg-surface-container-low h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
+            <div class="mb-lg flex flex-col items-center text-center">
+                <div
+                    class="w-16 h-16 rounded-lg bg-surface-container-high flex items-center justify-center mb-sm shadow-sm">
+                    <span class="material-symbols-outlined text-primary text-3xl">school</span>
+                </div>
+                <h2 class="font-title-md text-title-md text-on-surface font-bold">IIT Bombay</h2>
+                <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Computer Science Dept.</p>
+            </div>
+            <nav class="flex-grow flex flex-col gap-xs">
+                <a class="flex items-center gap-md px-sm py-sm rounded-xl text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors font-label-caps text-label-caps hover:shadow-md transition-all group"
+                    href="student_dashboard.html">
+                    <span class="material-symbols-outlined text-[20px] group-hover:icon-fill transition-all">dashboard</span>
+                    Dashboard
+                </a>
+                <!-- ACTIVE TAB: None -->
+                <a class="flex items-center gap-md px-sm py-sm rounded-xl text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors font-label-caps text-label-caps hover:shadow-md transition-all group"
+                    href="match_discovery.html">
+                    <span class="material-symbols-outlined text-[20px] group-hover:icon-fill transition-all">handshake</span>
+                    Matches
+                </a>
+                <a class="flex items-center gap-md px-sm py-sm rounded-xl text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors font-label-caps text-label-caps hover:shadow-md transition-all group"
+                    href="skill_gap_analyzer.html">
+                    <span class="material-symbols-outlined text-[20px] group-hover:icon-fill transition-all">trending_up</span>
+                    Skill Gap
+                </a>
+                <a class="flex items-center gap-md px-sm py-sm rounded-xl text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors font-label-caps text-label-caps hover:shadow-md transition-all group"
+                    href="student_portfolio.html">
+                    <span class="material-symbols-outlined text-[20px] group-hover:icon-fill transition-all">assignment_ind</span>
+                    Portfolio
+                </a>
+
+            </nav>
+            <div class="mt-auto pt-lg">
+                <button
+                    class="w-full gradient-primary text-on-primary py-3 rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">school</span>
+                    Teach Skill
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content Area -->
+        <main class="flex-1 w-full lg:ml-64 px-4 md:px-gutter py-lg pb-32 md:pb-lg flex flex-col gap-lg">
+            <!-- Section 1: What can you teach? -->
+            <div>
+                <h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-xs">
+                    What can you teach?
+                </h1>
+                <p class="font-body-md text-body-md text-on-surface-variant">Select the skills you want to offer to others.</p>
+            </div>
+            
+            <div id="skills-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Javascript will inject teach skills here -->
+            </div>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-4 my-2">
+                <div class="flex-1 h-px bg-outline-variant"></div>
+                <button id="swap-skills-btn" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-outline-variant hover:border-primary hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+                    <span class="font-label-caps text-label-caps">SWAP</span>
+                </button>
+                <div class="flex-1 h-px bg-outline-variant"></div>
+            </div>
+
+            <!-- Section 2: What do you want to learn? -->
+            <div>
+                <h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-xs">
+                    What do you want to learn?
+                </h2>
+                <p class="font-body-md text-body-md text-on-surface-variant">Select skills you'd like others to teach you.</p>
+            </div>
+
+            <div id="learn-skills-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Javascript will inject learn skills here -->
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+                <button id="save-skills-btn" class="px-8 py-3 gradient-primary text-on-primary rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">handshake</span>
+                    Save &amp; Find Matches
+                </button>
+            </div>
+        </main>
+    </div>
+    <!-- Bottom Mobile Nav -->
+    <nav class="lg:hidden fixed bottom-0 w-full bg-surface border-t border-outline-variant flex justify-around items-center z-50 pb-safe">
+        <a class="flex flex-col items-center p-2 text-on-surface-variant" href="student_dashboard.html">
+            <span class="material-symbols-outlined text-[24px]">dashboard</span>
+            <span class="font-label-caps text-[10px] mt-1">Dashboard</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-primary" href="match_discovery.html">
+            <span class="material-symbols-outlined text-[24px] icon-fill">handshake</span>
+            <span class="font-label-caps text-[10px] mt-1 font-bold">Matches</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant" href="skill_gap_analyzer.html">
+            <span class="material-symbols-outlined text-[24px]">trending_up</span>
+            <span class="font-label-caps text-[10px] mt-1">Skill Gap</span>
+        </a>
+        <a class="flex flex-col items-center p-2 text-on-surface-variant" href="student_portfolio.html">
+            <span class="material-symbols-outlined text-[24px]">assignment_ind</span>
+            <span class="font-label-caps text-[10px] mt-1">Profile</span>
+        </a>
+    </nav>
+    <!-- Footer -->
+    <footer
+        class="bg-surface-container-lowest dark:bg-surface-container-highest w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 hidden md:block">
+        <div
+            class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
+            <span class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant">© 2024
+                SkillSwap. Made for students, by students.</span>
+            <div class="flex flex-wrap gap-4 items-center">
+                <a class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline opacity-80 hover:opacity-100 hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 transition-all"
+                    href="#">Partnerships</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline opacity-80 hover:opacity-100 hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 transition-all"
+                    href="#">Language: English (IN)</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline opacity-80 hover:opacity-100 hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 transition-all"
+                    href="#">Privacy</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline opacity-80 hover:opacity-100 hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 transition-all"
+                    href="#">Terms</a>
+            </div>
+            <span class="font-bold text-primary font-title-md">SkillSwap</span>
+        </div>
+    </footer>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { initializeFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
+            authDomain: "skill-swap-13607.firebaseapp.com",
+            projectId: "skill-swap-13607",
+            storageBucket: "skill-swap-13607.firebasestorage.app",
+            messagingSenderId: "1084945079828",
+            appId: "1:1084945079828:web:2e4f6804050cd2c6a19101"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
+        });
+
+        // Auth guard: redirect to sign_in if no user is logged in
+        let currentUser = null;
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                console.log("[Auth] No user found, redirecting to sign in.");
+                window.location.href = 'sign_in.html';
+                return;
+            }
+            currentUser = user;
+            console.log(`[Teach Skill] User authenticated: ${user.uid}`);
+        });
+
+        // ===== SHARED SKILLS LIST =====
+        const skillsList = [
+            "React.js", "Python", "UI Design", "Figma", "Digital Marketing",
+            "Data Structures", "Node.js", "Java", "SQL", "Machine Learning",
+            "AWS", "Public Speaking", "Photography", "Video Editing"
+        ];
+
+        // ===== TEACH SKILLS =====
+        const skillsGrid = document.getElementById('skills-grid');
+        let selectedSkills = [];
+        const storedTeach = localStorage.getItem('skillsToTeach');
+        if (storedTeach) selectedSkills = JSON.parse(storedTeach);
+
+        function renderTeachSkills() {
+            skillsGrid.innerHTML = '';
+            skillsList.forEach(skill => {
+                const isSelected = selectedSkills.includes(skill);
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-outline-variant bg-surface hover:border-primary/50 text-on-surface'}`;
+                div.innerHTML = `
+                    <div class="w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'border-primary bg-primary text-white' : 'border-outline-variant bg-surface'}">
+                        ${isSelected ? '<span class="material-symbols-outlined text-[14px]">check</span>' : ''}
+                    </div>
+                    <span>${skill}</span>
+                `;
+                div.addEventListener('click', () => {
+                    if (isSelected) selectedSkills = selectedSkills.filter(s => s !== skill);
+                    else selectedSkills.push(skill);
+                    renderTeachSkills();
+                });
+                skillsGrid.appendChild(div);
+            });
+        }
+        renderTeachSkills();
+
+        // ===== LEARN SKILLS =====
+        const learnSkillsGrid = document.getElementById('learn-skills-grid');
+        let selectedLearnSkills = [];
+        const storedLearn = localStorage.getItem('skillsToLearn');
+        if (storedLearn) selectedLearnSkills = JSON.parse(storedLearn);
+
+        function renderLearnSkills() {
+            learnSkillsGrid.innerHTML = '';
+            skillsList.forEach(skill => {
+                const isSelected = selectedLearnSkills.includes(skill);
+                const div = document.createElement('div');
+                // Use a teal/secondary accent to visually distinguish the "learn" section
+                div.className = `p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-3 ${isSelected ? 'border-secondary bg-secondary/10 text-secondary font-bold' : 'border-outline-variant bg-surface hover:border-secondary/50 text-on-surface'}`;
+                div.innerHTML = `
+                    <div class="w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'border-secondary bg-secondary text-white' : 'border-outline-variant bg-surface'}">
+                        ${isSelected ? '<span class="material-symbols-outlined text-[14px]">check</span>' : ''}
+                    </div>
+                    <span>${skill}</span>
+                `;
+                div.addEventListener('click', () => {
+                    if (isSelected) selectedLearnSkills = selectedLearnSkills.filter(s => s !== skill);
+                    else selectedLearnSkills.push(skill);
+                    renderLearnSkills();
+                });
+                learnSkillsGrid.appendChild(div);
+            });
+        }
+        renderLearnSkills();
+
+        // ===== SWAP ACTION =====
+        document.getElementById('swap-skills-btn').addEventListener('click', () => {
+            const temp = selectedSkills;
+            selectedSkills = selectedLearnSkills;
+            selectedLearnSkills = temp;
+            renderTeachSkills();
+            renderLearnSkills();
+        });
+
+        // ===== SAVE BOTH & REDIRECT =====
+        document.getElementById('save-skills-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('save-skills-btn');
+
+            // Validation
+            if (selectedSkills.length === 0 && selectedLearnSkills.length === 0) {
+                alert('Please select at least one skill to teach or learn before saving.');
+                return;
+            }
+
+            // Show loading state on button
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Saving...';
+
+            // Save to localStorage (instant fallback)
+            localStorage.setItem('skillsToTeach', JSON.stringify(selectedSkills));
+            localStorage.setItem('skillsToLearn', JSON.stringify(selectedLearnSkills));
+
+            // ── Save to Firestore (primary source of truth) ──
+            if (!currentUser) {
+                alert('You are not logged in. Please sign in and try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Save &amp; Find Match';
+                return;
+            }
+
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userRef, {
+                    uid: currentUser.uid,
+                    displayName: currentUser.displayName || '',
+                    email: currentUser.email || '',
+                    photoURL: currentUser.photoURL || '',
+                    skillsToTeach: selectedSkills,
+                    skillsToLearn: selectedLearnSkills,
+                    isLookingForMatch: true,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                console.log('[Teach Skill] ✅ Skills saved to Firestore.');
+                console.log('  skillsToTeach:', selectedSkills);
+                console.log('  skillsToLearn:', selectedLearnSkills);
+
+                // Redirect only after confirmed Firestore write
+                window.location.href = 'match_discovery.html';
+
+            } catch (err) {
+                console.error('[Teach Skill] ❌ Firestore save failed:', err);
+                alert('Failed to save your skills. Please check your internet connection and try again.\n\nError: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Save &amp; Find Match';
+            }
+        });
+
+    </script>
+</body>
+
+</html>

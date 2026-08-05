@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en" style="background:#06040f"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Portfolio - SkillSwap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="webgl_bg.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "rgba(15, 12, 22, 0.5)",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#c7c4d8",
+                      "tertiary-container": "#008645",
+                      "on-secondary-fixed-variant": "#004e5b",
+                      "on-tertiary-container": "#f6fff4",
+                      "outline": "#777587",
+                      "tertiary": "#006a35",
+                      "background": "transparent",
+                      "primary": "#675df9",
+                      "secondary-container": "#004e5b",
+                      "surface-container-high": "rgba(45, 38, 65, 0.45)",
+                      "secondary": "#58d6f1",
+                      "secondary-fixed": "#a7edff",
+                      "on-surface": "#f3effc",
+                      "on-secondary-container": "#ffffff",
+                      "on-background": "#f3effc",
+                      "on-tertiary-fixed-variant": "#005228",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#100069",
+                      "surface-container-highest": "rgba(60, 52, 85, 0.5)",
+                      "surface-tint": "#4f44e2",
+                      "inverse-surface": "#302f39",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#001f25",
+                      "surface": "rgba(24, 20, 36, 0.45)",
+                      "on-primary-container": "#fffbff",
+                      "tertiary-fixed": "#6bfe9c",
+                      "surface-variant": "rgba(40, 35, 60, 0.45)",
+                      "on-tertiary-fixed": "#00210c",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "rgba(20, 16, 30, 0.3)",
+                      "inverse-primary": "#c4c0ff",
+                      "inverse-on-surface": "#f3effc",
+                      "surface-bright": "rgba(50, 42, 75, 0.4)",
+                      "surface-container-lowest": "rgba(10, 8, 15, 0.25)",
+                      "error-container": "#ffdad6",
+                      "surface-container": "rgba(30, 25, 45, 0.4)",
+                      "on-primary-fixed-variant": "#3622ca",
+                      "on-primary": "#ffffff",
+                      "primary-fixed-dim": "#c4c0ff",
+                      "tertiary-fixed-dim": "#4ae183",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#e3dfff",
+                      "secondary-fixed-dim": "#58d6f1",
+                      "primary-container": "#675df9",
+                      "outline-variant": "rgba(255, 255, 255, 0.1)"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "64px",
+                      "xs": "4px",
+                      "sm": "12px",
+                      "gutter": "24px",
+                      "lg": "40px",
+                      "md": "24px",
+                      "container-max": "1280px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter", "sans-serif"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter", "sans-serif"
+                      ],
+                      "title-md": [
+                              "Inter", "sans-serif"
+                      ],
+                      "headline-lg": [
+                              "Inter", "sans-serif"
+                      ],
+                      "badge-text": [
+                              "Inter", "sans-serif"
+                      ],
+                      "body-md": [
+                              "Inter", "sans-serif"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono", "monospace"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "badge-text": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: transparent;
+            color: #f3effc;
+        }
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #675df9, #58d6f1);
+        }
+        .bg-gradient-primary {
+            background-image: linear-gradient(to right, #675df9, #58d6f1);
+        }
+        .glass-panel {
+            background: rgba(24, 20, 36, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .timeline-node::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #4d41df;
+            border: 2px solid white;
+        }
+        .timeline-node.success::before {
+            background-color: #008645;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
+<div class="flex items-center gap-md">
+<a class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight" href="student_dashboard.html">SkillSwap</a>
+</div>
+<div class="flex-1 max-w-md mx-md hidden md:block">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container rounded-full py-sm pl-xl pr-sm text-body-md font-body-md border-none focus:ring-2 focus:ring-primary outline-none" placeholder="Search skills, students..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button aria-label="Notifications" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="Workspace Premium" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+</button>
+<button aria-label="Wallet" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</button>
+<a href="edit_profile.html" class="cursor-pointer hover:ring-2 hover:ring-primary transition-all rounded-full block" title="Edit Profile">
+<img id="top-nav-avatar" alt="Student avatar with status" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container" data-alt="A clean, professional headshot of an Indian college student with a slight smile, well-lit in a modern campus setting, serving as a user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLW9j9XFjzBy074Tt6mwSzYyladtEpiG9L9etHxTCOUm-mTjAHIjq5Um9Vn198VDksTRxtYe2Ui9LQVmaBV6C2XklgDudfkvI00kcxm5pRUX0RQeBiy28baMIZpDiiQnR51TNzgmcloJt9bhhDECKX4xbJX2ilQG6lsMZkUWW-BVgznAQrDgN1vkzjPmXflmAAO_jOUIfKSmWfpR6XT1v45HjOy5C97C52f1Psy2gJGeEisSIM20pSkZ4DkDMod8EViLPpOPfNWRI"/>
+</a>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
+<div class="flex items-center gap-md mb-lg px-2">
+<img alt="Campus Logo" class="w-12 h-12 rounded-lg object-cover" data-alt="A stylized logo for a fictional university department. It features a modern geometric crest in deep indigo and bright cyan on a crisp white background. The design is clean, corporate-academic, and highly professional, suggesting an engineering or computer science focus. The lighting is neutral studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrsiv54f6J8jZA8L-X5__3MdKM4sWfi2_Z59wyrF12qf7YAEdqhuLUKJcsAy4UheSIdZFF9iS_tnlCbxzKp-ebpV36wupzjYt8HPbKCYeOCq3bPEhcAFCy0MWiuKB_DDwW3VIDapAowExUEbRB82rqLqJCHvW5F79yrIWXg5X2iObMDtEfFbAReHa9Dryq7FcuMLelAIOoZamF_XrHepSXoZlJNDBq0cj-vXHtOosKYjLQlq9KSs5nTdU9ywUrzMXE5s4kiVP7o5U"/>
+<div>
+<h2 class="font-title-md text-title-md text-primary font-bold">IIT Bombay</h2>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Computer Science Dept.</p>
+</div>
+</div>
+<nav class="flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="student_dashboard.html">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="match_discovery.html">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="font-label-caps text-label-caps">Matches</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors rounded-xl" href="skill_gap_analyzer.html">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-label-caps text-label-caps">Skill Gap</span>
+</a>
+<a class="flex items-center gap-md px-4 py-3 bg-secondary-container dark:bg-secondary-fixed-dim text-on-secondary-container dark:text-on-secondary-fixed rounded-xl font-bold shadow-sm scale-102 hover:shadow-md transition-all" href="student_portfolio.html">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="font-label-caps text-label-caps">Portfolio</span>
+</a>
+
+</nav>
+<button onclick="window.location.href='teach_skill.html'" class="mt-auto gradient-primary text-on-primary font-title-md text-title-md py-3 rounded-xl shadow-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2"><span class="material-symbols-outlined">school</span> Teach Skill</button>
+</aside>
+<main class="flex-1 lg:ml-64 w-full max-w-container-max mx-auto px-gutter py-xl">
+<!-- Profile Header -->
+<section class="glass-panel rounded-xl p-lg mb-xl shadow-[0_4px_20px_rgba(108,99,255,0.08)] relative overflow-hidden">
+<!-- Decorative gradient orb -->
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+<div class="flex flex-col md:flex-row gap-lg items-start md:items-center relative z-10">
+<div class="relative group cursor-pointer">
+<img id="portfolio-avatar" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg transition-transform duration-300 group-hover:scale-105" data-alt="High-quality portrait of a confident young Indian college student, bright modern lighting, professional yet approachable, wearing smart casual attire against a blurred campus background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiz169CL-OiU_Zrhgr0aGPFPw3fb6Bu6dhrjDzHDhJue2QRNXoJmGU1SoWDik5JecWQRX1tsTnGjFDN__MUuK_EzaoS5WORv5q0p9t3zE29PopTOmHBJoGAOPuU3l9QRpPpJxOUvsb2BfS9Qn6JcN02zi-ItYUTnkKtfXFydPhFVPFPW60N89eYTSroOkAHCBYMyJkBZQs_PWqqw3iU6foYABI7e4cwgvwVaoT0buF31EmDQh8lvTmHj7vpAdiLiHzpXbogGLx5LY"/>
+<div class="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-sm">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="verified" data-weight="fill" style="font-variation-settings: 'FILL' 1; font-size: 28px;">verified</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<h1 id="portfolio-name" class="font-headline-lg text-headline-lg md:text-display-lg md:font-display-lg text-on-background">Aarav Patel</h1>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-primary font-badge-text text-badge-text border border-primary-fixed">
+<span class="material-symbols-outlined text-[16px]" data-icon="school">school</span>
+                            IIT Bombay - CS
+                        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mb-md">
+                        Passionate about building scalable systems and sharing knowledge. Looking to swap Advanced Python skills for UI/UX principles. Active open-source contributor.
+                    </p>
+<div class="flex flex-wrap gap-sm">
+<button class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-title-md text-title-md shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf">picture_as_pdf</span>
+                            Export as PDF
+                        </button>
+<a id="linkedin-connect-btn" target="_blank" href="https://www.linkedin.com" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-transparent text-primary font-title-md text-title-md border-2 border-primary hover:bg-primary-container/10 transition-all duration-300">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
+                            Connect
+                        </a>
+</div>
+</div>
+<!-- Credit Stats -->
+<div class="flex md:flex-col gap-md p-md bg-surface-container rounded-xl min-w-[150px] justify-center text-center">
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-xs">Swaps</div>
+<div class="font-headline-lg text-headline-lg text-primary">42</div>
+</div>
+<div class="h-px w-full bg-outline-variant hidden md:block"></div>
+<div class="w-px h-full bg-outline-variant md:hidden"></div>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-xs">Credits</div>
+<div class="font-headline-lg text-headline-lg text-secondary">1,250</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-xl">
+<!-- Left Column: Skills & History -->
+<div class="lg:col-span-2 space-y-xl">
+<!-- Skills Mastery -->
+<section>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
+                        Skills Mastery
+                    </h2>
+<div id="portfolio-skills-container" class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Javascript will inject skills here -->
+</div>
+</section>
+<!-- Swap History -->
+<section>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+                        Recent Swaps
+                    </h2>
+<div class="pl-md relative border-l-2 border-surface-container-high space-y-lg">
+<!-- Timeline Item 1 -->
+<div class="relative timeline-node success pl-lg">
+<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-title-md text-title-md text-on-surface">Taught Python Basics</h3>
+<span class="font-label-caps text-label-caps text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+                                        Completed
+                                    </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Helped a design student set up their first Django project.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<img alt="Student" class="w-8 h-8 rounded-full" data-alt="Small circular avatar of a female student with glasses, smiling, bright lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4zB5kMVXdV8aIgPb4YIXYSnO7GPeL4rONeR4OlCmjSn1ipL6OVjtOUTQzgcRQPgwQ_2V5dOjUPqB6LB1UMhhKGqOINNShgKqQ98iXVXI6HQfCQQ8aZOQ3lB68zLaEcwJv1VBjLqmPHdfm280se6H2GMkyDZhG1MITL5d0g5vnc9wY6yIjdnRz7syrqWxRlm5QaZ1bb--Jx86EPML88vU_D-Z9HaSU-oorHasju4NCcG8k1OemWu23fKogp79EhtyYxo_J-4UsO7o"/>
+<span class="font-badge-text text-badge-text text-on-surface">with Priya S.</span>
+</div>
+<span class="font-badge-text text-badge-text text-primary font-bold">+50 Credits</span>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative timeline-node pl-lg">
+<div class="bg-surface rounded-xl p-md border border-primary/20 shadow-sm hover:shadow-md transition-shadow ring-1 ring-primary/10">
+<div class="flex justify-between items-start mb-sm">
+<h3 class="font-title-md text-title-md text-on-surface">Learning Figma Auto-Layout</h3>
+<span class="font-label-caps text-label-caps text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pending">pending</span>
+                                        Scheduled
+                                    </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Upcoming session to improve UI/UX practical skills.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<img alt="Student" class="w-8 h-8 rounded-full" data-alt="Small circular avatar of a male student in a graphic tee, casual setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcJ09-b2EyV7AYoC8sbjqNToU3yFt70kMRK30irgfcoFzqSHuSCWeIha9L4W6k7W7KdiqWrO9HxpF4iCsX16CidbTbq_W9fqP8sB43BnIMaoTYWIn2RG7FBPXEazsNuPmzH1Pjn5g-Dk4KKhcWlE1yq4RD_rSAezkgGa8NReTkm1uQbOVVrSe73gpcjiAq1tE-C6fS0OdiGh-mQz4zTuS9yTE42NvQzjtOduFi4JCiS3zPf5dA5Foce_LkFhmd1r7rbbFvDF4Rz7o"/>
+<span class="font-badge-text text-badge-text text-on-surface">with Rohan K.</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tomorrow, 4 PM</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Certs & Projects -->
+<div class="space-y-xl">
+<!-- Certificates Bento Box -->
+<section>
+<h2 class="font-title-md text-title-md text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="workspace_premium">workspace_premium</span>
+                        Certifications
+                    </h2>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-center aspect-square flex flex-col items-center justify-center group hover:-translate-y-1 transition-transform">
+<span class="material-symbols-outlined text-[40px] text-primary mb-xs" data-icon="military_tech">military_tech</span>
+<h4 class="font-badge-text text-badge-text text-on-surface leading-tight">AWS Cloud<br/>Practitioner</h4>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">2023</p>
+</div>
+<div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-center aspect-square flex flex-col items-center justify-center group hover:-translate-y-1 transition-transform">
+<span class="material-symbols-outlined text-[40px] text-[#0077B6] mb-xs" data-icon="code">code</span>
+<h4 class="font-badge-text text-badge-text text-on-surface leading-tight">Python<br/>Specialist</h4>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Coursera</p>
+</div>
+</div>
+</section>
+<!-- Featured Projects (GitHub) -->
+<section>
+<h2 class="font-title-md text-title-md text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface" data-icon="folder_open">folder_open</span>
+                        Featured Projects
+                    </h2>
+<div class="space-y-md">
+<!-- Project 1 -->
+<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-title-md text-title-md text-primary group-hover:underline">CampusRide</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" data-icon="open_in_new">open_in_new</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm line-clamp-2">A carpooling app for university students built with Django and React Native.</p>
+<div class="flex items-center gap-md">
+<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-[#0077B6]"></span> Python
+                                </span>
+<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="star">star</span> 24
+                                </span>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-title-md text-title-md text-primary group-hover:underline">AutoGrader CLI</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]" data-icon="open_in_new">open_in_new</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm line-clamp-2">Command line tool to automate test case evaluation for CS101 assignments.</p>
+<div class="flex items-center gap-md">
+<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-primary"></span> Shell
+                                </span>
+<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="star">star</span> 12
+                                </span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface-variant font-label-caps text-label-caps w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 flat no shadows">
+<div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
+<div class="font-bold text-primary">SkillSwap</div>
+<div>© 2024 SkillSwap. Made for students, by students.</div>
+<div class="flex gap-md">
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Partnerships</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Language: English (IN)</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy</a>
+<a class="text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-inverse-primary underline underline-offset-4 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms</a>
+</div>
+</div>
+</footer>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { initializeFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
+        authDomain: "skill-swap-13607.firebaseapp.com",
+        projectId: "skill-swap-13607",
+        storageBucket: "skill-swap-13607.firebasestorage.app",
+        messagingSenderId: "1084945079828",
+        appId: "1:1084945079828:web:2e4f6804050cd2c6a19101"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = initializeFirestore(app, {
+        experimentalForceLongPolling: true
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Apply defaults from Auth state
+        const portNameEl = document.getElementById('portfolio-name');
+        if (portNameEl && user.displayName) portNameEl.textContent = user.displayName;
+
+        const portAvatarEl = document.getElementById('portfolio-avatar');
+        if (portAvatarEl && user.photoURL) portAvatarEl.src = user.photoURL;
+
+        const topNavAvatarEl = document.getElementById('top-nav-avatar');
+        if (topNavAvatarEl && user.photoURL) topNavAvatarEl.src = user.photoURL;
+
+            let profileName = user.displayName || 'student';
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.displayName) profileName = userData.displayName;
+                    if (userData.displayName || userData.name) {
+                        profileName = userData.displayName || userData.name;
+                        if (portNameEl) portNameEl.textContent = profileName;
+                    }
+                    if (userData.college) {
+                        const portCollegeEl = document.getElementById('portfolio-college');
+                        if (portCollegeEl) portCollegeEl.textContent = userData.college;
+                    }
+                    
+                    if (userData.photoURL) {
+                        if (portAvatarEl) portAvatarEl.src = userData.photoURL;
+                        if (topNavAvatarEl) topNavAvatarEl.src = userData.photoURL;
+                    }
+                    
+                    // Update LinkedIn connect button to point directly to their LinkedIn profile URL
+                    const connectBtn = document.getElementById('linkedin-connect-btn');
+                    if (connectBtn) {
+                        if (userData.linkedinUrl) {
+                            connectBtn.href = userData.linkedinUrl;
+                        } else {
+                            const slug = profileName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                            connectBtn.href = `https://www.linkedin.com/in/${slug}`;
+                        }
+                    }
+                    
+                    const skillsContainer = document.getElementById('portfolio-skills-container');
+                    if (skillsContainer && userData.skillsToTeach && userData.skillsToTeach.length > 0) {
+                        skillsContainer.innerHTML = userData.skillsToTeach.map(skill => `
+<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-[0_4px_20px_rgba(108,99,255,0.05)] hover:shadow-[0_8px_30px_rgba(108,99,255,0.1)] transition-all duration-300 group">
+<div class="flex justify-between items-start mb-md">
+<div class="flex items-center gap-sm">
+<div class="p-sm rounded-lg bg-secondary-container/20 text-secondary">
+<span class="material-symbols-outlined">star</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">${skill}</h3>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Skill Offered</p>
+</div>
+</div>
+</div>
+</div>
+                        `).join('');
+                    } else if (skillsContainer) {
+                        skillsContainer.innerHTML = '<p class="text-on-surface-variant">No skills listed yet. Add them in Teach Skill!</p>';
+                    }
+                } else {
+                    console.log("[Auth] User document missing. Continuing with default view.");
+                }
+            } catch (error) {
+                console.error("[Auth] Error fetching user profile:", error);
+            }
+    });
+</script>
+<script>
+        // Simple micro-interaction for progress bars on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const bars = document.querySelectorAll('.bg-gradient-primary, .bg-secondary');
+            bars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+        });
+</script>
+</body></html>
