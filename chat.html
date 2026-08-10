@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet"/>
+    <script src="app-state.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -226,6 +227,20 @@
         let typingTimeout = null;
         let isTyping = false;
 
+        function getTargetUserIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromUrl = urlParams.get('targetUserId');
+            if (fromUrl) return fromUrl;
+            const fromStorage = sessionStorage.getItem('pendingChatTargetUserId');
+            return fromStorage || null;
+        }
+
+        function setPendingChatTarget(targetUserIdValue) {
+            if (targetUserIdValue) {
+                sessionStorage.setItem('pendingChatTargetUserId', targetUserIdValue);
+            }
+        }
+
         // Auto-resize textarea
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
@@ -243,7 +258,7 @@
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 if(!sendBtn.disabled) {
-                    chatForm.dispatchEvent(new Event('submit'));
+                    chatForm.requestSubmit();
                 }
             }
         });
@@ -299,17 +314,25 @@
                 window.location.href = 'sign_in.html';
                 return;
             }
+
+            const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+            if (!user.emailVerified && !isGoogleUser) {
+                console.log("[Auth] User email not verified, redirecting to sign in.");
+                window.location.href = 'sign_in.html?unverified=true';
+                return;
+            }
             currentUser = user;
 
-            // Get target user ID from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            targetUserId = urlParams.get('targetUserId');
+            // Get target user ID from URL or stored session link
+            targetUserId = getTargetUserIdFromUrl();
 
             if (!targetUserId) {
                 alert("No chat partner selected.");
                 window.location.href = 'student_dashboard.html';
                 return;
             }
+
+            setPendingChatTarget(targetUserId);
 
             // Generate deterministic Chat ID
             chatId = currentUser.uid < targetUserId ? `${currentUser.uid}_${targetUserId}` : `${targetUserId}_${currentUser.uid}`;

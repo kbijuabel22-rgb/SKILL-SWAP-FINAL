@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+    <script src="app-state.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -151,31 +152,44 @@
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md min-h-screen flex flex-col" style="background: transparent;">
-<!-- TopNavBar -->
-<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 shadow-[0_4px_20px_rgba(108,99,255,0.08)]">
     <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
-        <div class="flex items-center gap-md">
-            <div class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</div>
-        </div>
-        <div class="hidden md:flex items-center gap-lg h-full">
-            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_dashboard.html">Dashboard</a>
-            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="match_discovery.html">Matches</a>
-            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="skill_gap_analyzer.html">Skill Gap</a>
-            <a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_portfolio.html">Portfolio</a>
-        </div>
+        <a href="student_dashboard.html" class="flex items-center gap-2">
+            <span class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
+        </a>
+
         <div class="flex items-center gap-sm">
-            <a href="edit_profile.html" class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary cursor-pointer hover:ring-2 hover:ring-primary transition-all block">
-                <img id="top-nav-avatar" alt="Student Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
+            <!-- 1. Profile Avatar -->
+            <a href="edit_profile.html" class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
+                <img id="top-nav-avatar" alt="Student avatar" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"/>
             </a>
-            <button id="logout-btn" class="p-2 ml-2 text-error hover:bg-error-container transition-all duration-200 rounded-full flex items-center justify-center" title="Logout">
-                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+
+            <!-- 2. Notification Bell Icon -->
+            <div class="relative" id="notifications-wrapper">
+                <button id="bell-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Notifications">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span id="notification-badge" class="absolute top-0 right-0 bg-error text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+
+                <div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-surface-container-high border border-outline-variant rounded-xl shadow-lg flex flex-col overflow-hidden opacity-0 pointer-events-none transition-all duration-200 transform scale-95 origin-top-right z-50">
+                    <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-highest">
+                        <h3 class="font-title-md text-sm font-bold text-on-surface">Notifications</h3>
+                    </div>
+                    <div id="notifications-list" class="max-h-64 overflow-y-auto p-2 flex flex-col gap-1 hide-scrollbar">
+                        <div class="p-4 text-center text-sm text-on-surface-variant opacity-70">No new notifications</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Hamburger Menu Button -->
+            <button id="hamburger-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Settings & Preferences">
+                <span class="material-symbols-outlined">menu</span>
             </button>
         </div>
     </div>
 </nav>
 
 <div class="flex flex-1 overflow-hidden">
-    <!-- SideNavBar -->
     <aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
         <div class="flex items-center gap-md mb-lg px-2">
             <div class="w-12 h-12 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary font-extrabold text-xl shadow-inner border border-outline-variant">
@@ -210,57 +224,57 @@
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
     <main class="flex-grow lg:pl-64 min-h-screen pb-xl flex flex-col justify-start">
-        <div class="px-gutter py-md max-w-4xl w-full mx-auto flex flex-col gap-lg mt-6">
-            
-            <!-- Page Title -->
+        <div class="px-gutter py-md max-w-5xl w-full mx-auto flex flex-col gap-lg mt-6">
             <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
                 <div>
                     <h1 class="font-display-lg text-3xl font-extrabold text-on-surface flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary text-3xl">manage_accounts</span>
                         Edit Profile
                     </h1>
-                    <p class="text-on-surface-variant text-sm mt-1">Keep your SkillSwap credentials, college details, and skills updated.</p>
+                    <p class="text-on-surface-variant text-sm mt-1">Showcase your work, upload certificates, and keep your portfolio current.</p>
                 </div>
-                <a href="student_dashboard.html" class="flex items-center gap-2 text-primary hover:text-secondary transition-colors text-sm font-semibold">
+                <a href="student_portfolio.html" class="flex items-center gap-2 text-primary hover:text-secondary transition-colors text-sm font-semibold">
                     <span class="material-symbols-outlined text-lg">arrow_back</span>
-                    Back to Dashboard
+                    Back to Portfolio
                 </a>
             </div>
 
-            <!-- Toast Alert -->
+            <div id="onboarding-banner" class="hidden rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm text-on-surface">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p class="font-semibold text-primary">Step 1 of 2: Tell us about yourself</p>
+                        <p class="text-on-surface-variant mt-1">Add your name and bio first, then you can save your work or skip the rest for now.</p>
+                    </div>
+                    <span id="onboarding-step-pill" class="rounded-full border border-primary/20 px-3 py-1 text-xs font-semibold uppercase text-primary">First-time setup</span>
+                </div>
+            </div>
+
             <div id="toast" class="hidden fixed bottom-6 right-6 z-50 glass-card border border-outline px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-md animate-bounce">
                 <span class="material-symbols-outlined text-secondary" id="toast-icon">check_circle</span>
                 <span class="text-on-surface text-sm font-semibold" id="toast-msg">Profile updated successfully!</span>
             </div>
 
-            <!-- Profile Form Glass Card -->
             <form id="edit-profile-form" class="glass-card rounded-2xl p-lg border border-outline-variant shadow-xl flex flex-col gap-lg">
-                
-                <!-- Avatar and URL Grid -->
-                <div class="flex flex-col md:flex-row items-center gap-lg border-b border-outline-variant/30 pb-lg">
+                <div class="flex flex-col md:flex-row items-start gap-lg border-b border-outline-variant/30 pb-lg">
                     <div class="relative group">
                         <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/40 group-hover:border-primary transition-all duration-300 shadow-xl bg-surface-container-high">
                             <img id="avatar-preview" alt="Avatar Preview" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
                         </div>
-                        <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span class="material-symbols-outlined text-white text-3xl">image</span>
-                        </div>
                     </div>
                     <div class="flex-grow w-full flex flex-col gap-sm">
                         <label class="text-sm font-bold text-on-surface flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm text-primary">link</span>
-                            Profile Picture URL
+                            <span class="material-symbols-outlined text-sm text-primary">image</span>
+                            Profile picture upload
                         </label>
+                        <input id="profile-photo-file" type="file" accept="image/png,image/jpeg,image/jpg" class="custom-input rounded-xl px-4 py-3 w-full text-sm"/>
+                        <p class="text-xs text-on-surface-variant">Upload a JPG or PNG file up to 5 MB. You can also paste a public image URL below.</p>
                         <input id="profile-pic-input" type="url" class="custom-input rounded-xl px-4 py-3 w-full text-sm" placeholder="Paste image address URL..."/>
-                        <p class="text-xs text-on-surface-variant">Provide any public URL of an image (e.g. from Google Drive, LinkedIn, Gravatar, or Unsplash) to update your profile photo.</p>
+                        <div id="profile-photo-status" class="text-xs text-on-surface-variant"></div>
                     </div>
                 </div>
 
-                <!-- Input Fields Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
-                    <!-- Display Name -->
+                <div id="basic-info-section" class="grid grid-cols-1 md:grid-cols-2 gap-md">
                     <div class="flex flex-col gap-xs">
                         <label class="text-sm font-bold text-on-surface flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm text-primary">person</span>
@@ -268,7 +282,6 @@
                         </label>
                         <input id="profile-name-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="Enter your full name..."/>
                     </div>
-                    <!-- LinkedIn URL -->
                     <div class="flex flex-col gap-xs">
                         <label class="text-sm font-bold text-on-surface flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm text-primary">public</span>
@@ -276,7 +289,13 @@
                         </label>
                         <input id="profile-linkedin-input" type="text" class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. https://www.linkedin.com/in/username..."/>
                     </div>
-                    <!-- College Name -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">code</span>
+                            GitHub URL or Username
+                        </label>
+                        <input id="profile-github-input" type="text" class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. https://github.com/username..."/>
+                    </div>
                     <div class="flex flex-col gap-xs">
                         <label class="text-sm font-bold text-on-surface flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm text-primary">school</span>
@@ -284,78 +303,94 @@
                         </label>
                         <input id="profile-college-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. IIT Bombay, TKM College..."/>
                     </div>
-                    <!-- Major / Department -->
                     <div class="flex flex-col gap-xs">
                         <label class="text-sm font-bold text-on-surface flex items-center gap-2">
                             <span class="material-symbols-outlined text-sm text-primary">psychology</span>
-                            Major / Branch
+                            Department / Major
                         </label>
                         <input id="profile-major-input" type="text" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="e.g. Computer Science, Mechanical Engineering..."/>
                     </div>
-                </div>
-
-                <!-- Skills Management Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg border-t border-outline-variant/30 pt-lg">
-                    <!-- Skills to Teach -->
-                    <div class="flex flex-col gap-md">
-                        <div>
-                            <label class="text-sm font-bold text-on-surface flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm text-secondary">menu_book</span>
-                                Skills You Can Teach
-                            </label>
-                            <p class="text-xs text-on-surface-variant mt-1">Add subjects, tools, or skills you want to mentor peers on.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <input id="teach-skill-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add teaching skill..."/>
-                            <button id="add-teach-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[18px]">add</span>
-                                Add
-                            </button>
-                        </div>
-                        <div id="teach-skills-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl">
-                            <!-- Tags injected dynamically -->
-                        </div>
-                    </div>
-
-                    <!-- Skills to Learn -->
-                    <div class="flex flex-col gap-md">
-                        <div>
-                            <label class="text-sm font-bold text-on-surface flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm text-tertiary-fixed">emoji_objects</span>
-                                Skills You Want to Learn
-                            </label>
-                            <p class="text-xs text-on-surface-variant mt-1">Specify topics or technical tools you'd like to be coached in.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <input id="learn-skill-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add learning skill..."/>
-                            <button id="add-learn-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[18px]">add</span>
-                                Add
-                            </button>
-                        </div>
-                        <div id="learn-skills-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl">
-                            <!-- Tags injected dynamically -->
-                        </div>
+                    <div class="md:col-span-2 flex flex-col gap-xs">
+                        <label class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-primary">notes</span>
+                            Bio / Tagline
+                        </label>
+                        <textarea id="profile-bio-input" rows="3" required class="custom-input rounded-xl px-4 py-3 text-sm" placeholder="Write a short line about your interests, goals, or what you're building."></textarea>
                     </div>
                 </div>
 
-                <!-- Submit / Control Grid -->
-                <div class="flex justify-end gap-md border-t border-outline-variant/30 pt-lg mt-md">
-                    <a href="student_dashboard.html" class="px-6 py-3 border border-outline-variant hover:bg-white/5 text-on-surface font-semibold text-sm rounded-xl transition-colors flex items-center justify-center">
-                        Cancel
-                    </a>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-lg border-t border-outline-variant/30 pt-lg">
+                    <section id="certifications-section" class="rounded-2xl border border-outline-variant/30 p-4">
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">workspace_premium</span> Certifications</h3>
+                                <p class="text-xs text-on-surface-variant mt-1">Add proof of your work or training.</p>
+                            </div>
+                            <button type="button" id="add-certification-btn" class="liquid-glass-button text-white text-xs px-3 py-2 rounded-xl">+ Add certification</button>
+                        </div>
+                        <div id="certifications-form-list" class="space-y-3"></div>
+                    </section>
+
+                    <section id="projects-section" class="rounded-2xl border border-outline-variant/30 p-4">
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">folder_open</span> Projects</h3>
+                                <p class="text-xs text-on-surface-variant mt-1">Showcase live work, demos, or GitHub projects.</p>
+                            </div>
+                            <button type="button" id="add-project-btn" class="liquid-glass-button text-white text-xs px-3 py-2 rounded-xl">+ Add project</button>
+                        </div>
+                        <div id="projects-form-list" class="space-y-3"></div>
+                    </section>
+                </div>
+
+                <section id="skills-section" class="rounded-2xl border border-outline-variant/30 p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">psychology</span> Skills Offered</h3>
+                            <p class="text-xs text-on-surface-variant mt-1">Add the skills you want featured on your portfolio.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="skills-offered-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add a skill e.g. React, UI/UX, Python"/>
+                        <button id="add-skill-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Add
+                        </button>
+                    </div>
+                    <div id="skills-offered-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl mt-3"></div>
+                </section>
+
+                <section id="skills-wanted-section" class="rounded-2xl border border-outline-variant/30 p-4">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">favorite_border</span> Skills Wanted</h3>
+                            <p class="text-xs text-on-surface-variant mt-1">Add skills you want to learn or swap for.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="skills-wanted-input" type="text" class="custom-input rounded-xl px-4 py-2.5 text-sm flex-grow" placeholder="Add a skill you want e.g. Figma, Data Science"/>
+                        <button id="add-skills-wanted-btn" type="button" class="liquid-glass-button text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Add
+                        </button>
+                    </div>
+                    <div id="skills-wanted-tags" class="flex flex-wrap gap-2 min-h-[48px] p-2 bg-surface-container-low/20 border border-outline-variant/20 rounded-xl mt-3"></div>
+                </section>
+
+                <div class="flex flex-wrap justify-end gap-md border-t border-outline-variant/30 pt-lg mt-md">
+                    <button id="skip-profile-btn" type="button" class="px-6 py-3 border border-outline-variant hover:bg-white/5 text-on-surface font-semibold text-sm rounded-xl transition-colors hidden">
+                        Save as Draft / Skip for now
+                    </button>
                     <button id="save-profile-btn" type="submit" class="liquid-glass-button text-white font-bold text-sm px-8 py-3 rounded-xl flex items-center gap-2">
                         <span class="material-symbols-outlined text-[20px]">save</span>
                         Save Changes
                     </button>
                 </div>
             </form>
-
         </div>
     </main>
 </div>
 
-<!-- Footer -->
 <footer class="bg-surface-container-lowest dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface-variant font-label-caps text-label-caps w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 flat no shadows">
     <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
         <div class="font-bold text-primary opacity-80 hover:opacity-100 transition-opacity">SkillSwap</div>
@@ -373,6 +408,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { initializeFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
@@ -389,162 +425,43 @@
     const db = initializeFirestore(app, {
         experimentalForceLongPolling: true
     });
+    const storage = getStorage(app);
 
     let currentUserId = null;
-    let teachSkills = [];
-    let learnSkills = [];
+    let certifications = [];
+    let projects = [];
+    let skillsOffered = [];
+    let skillsWanted = [];
+    let photoURL = "";
+    let isFirstTimeSetup = false;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
 
-    // Live preview update for avatar
     const avatarPreview = document.getElementById('avatar-preview');
     const profilePicInput = document.getElementById('profile-pic-input');
-    profilePicInput.addEventListener('input', () => {
-        const val = profilePicInput.value.trim();
-        if (val) {
-            avatarPreview.src = val;
-        } else {
-            avatarPreview.src = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w';
-        }
-    });
+    const profilePhotoFileInput = document.getElementById('profile-photo-file');
+    const photoStatusEl = document.getElementById('profile-photo-status');
 
-    // Protect route and load data
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            console.log("[Auth] Redirecting to login page");
-            window.location.href = 'index.html';
-            return;
-        }
-        currentUserId = user.uid;
-        console.log(`[EditProfile] Loaded page for user: ${user.uid}`);
-
-        // Set default values from Firebase Auth Object
-        document.getElementById('profile-name-input').value = user.displayName || "";
-        if (user.photoURL) {
-            profilePicInput.value = user.photoURL;
-            avatarPreview.src = user.photoURL;
-            document.getElementById('top-nav-avatar').src = user.photoURL;
-        }
-
-        // Fetch user from Firestore
-        try {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userSnap = await getDoc(userDocRef);
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                
-                document.getElementById('profile-name-input').value = userData.displayName || userData.name || user.displayName || "";
-                document.getElementById('profile-college-input').value = userData.college || "";
-                document.getElementById('profile-major-input').value = userData.major || "";
-                document.getElementById('profile-linkedin-input').value = userData.linkedinUrl || "";
-                
-                if (userData.college) {
-                    document.getElementById('side-nav-college').textContent = userData.college;
-                }
-
-                if (userData.photoURL || userData.photoUrl) {
-                    const pic = userData.photoURL || userData.photoUrl;
-                    profilePicInput.value = pic;
-                    avatarPreview.src = pic;
-                    document.getElementById('top-nav-avatar').src = pic;
-                }
-
-                // Load skills
-                teachSkills = userData.skillsToTeach || [];
-                learnSkills = userData.skillsToLearn || [];
-                renderSkills();
+    function getPreferredDisplayName(user, userData = null) {
+        const candidates = [
+            userData?.displayName,
+            userData?.name,
+            user?.displayName,
+            user?.providerData?.[0]?.displayName,
+            user?.email?.split('@')[0]
+        ];
+        for (const candidate of candidates) {
+            if (typeof candidate === 'string' && candidate.trim()) {
+                return candidate.trim();
             }
-        } catch (error) {
-            console.error("[EditProfile] Error loading user document:", error);
-            showToast("Error loading profile data from server", true);
         }
-    });
-
-    // Rendering Skill Chips
-    function renderSkills() {
-        const teachContainer = document.getElementById('teach-skills-tags');
-        const learnContainer = document.getElementById('learn-skills-tags');
-
-        // Render Teach Skills
-        if (teachSkills.length === 0) {
-            teachContainer.innerHTML = `<span class="text-xs text-on-surface-variant/60 italic p-1">No skills added yet</span>`;
-        } else {
-            teachContainer.innerHTML = teachSkills.map((skill, index) => `
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary border border-secondary/30 text-xs font-semibold select-none">
-                    <span>${skill}</span>
-                    <button type="button" class="text-on-surface hover:text-error transition-colors flex items-center" onclick="removeTeachSkill(${index})">
-                        <span class="material-symbols-outlined text-[14px]">close</span>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // Render Learn Skills
-        if (learnSkills.length === 0) {
-            learnContainer.innerHTML = `<span class="text-xs text-on-surface-variant/60 italic p-1">No skills added yet</span>`;
-        } else {
-            learnContainer.innerHTML = learnSkills.map((skill, index) => `
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/20 text-primary border border-primary/30 text-xs font-semibold select-none">
-                    <span>${skill}</span>
-                    <button type="button" class="text-on-surface hover:text-error transition-colors flex items-center" onclick="removeLearnSkill(${index})">
-                        <span class="material-symbols-outlined text-[14px]">close</span>
-                    </button>
-                </div>
-            `).join('');
-        }
+        return 'Student';
     }
 
-    // Bind window functions so onclick events in innerHTML can execute them
-    window.removeTeachSkill = (index) => {
-        teachSkills.splice(index, 1);
-        renderSkills();
-    };
-
-    window.removeLearnSkill = (index) => {
-        learnSkills.splice(index, 1);
-        renderSkills();
-    };
-
-    // Add Teach Skill button click
-    document.getElementById('add-teach-btn').addEventListener('click', () => {
-        const input = document.getElementById('teach-skill-input');
-        const skill = input.value.trim();
-        if (skill && !teachSkills.includes(skill)) {
-            teachSkills.push(skill);
-            input.value = '';
-            renderSkills();
-        }
-    });
-
-    // Add Learn Skill button click
-    document.getElementById('add-learn-btn').addEventListener('click', () => {
-        const input = document.getElementById('learn-skill-input');
-        const skill = input.value.trim();
-        if (skill && !learnSkills.includes(skill)) {
-            learnSkills.push(skill);
-            input.value = '';
-            renderSkills();
-        }
-    });
-
-    // Press Enter to add skills
-    document.getElementById('teach-skill-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('add-teach-btn').click();
-        }
-    });
-    document.getElementById('learn-skill-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('add-learn-btn').click();
-        }
-    });
-
-    // Toast alert helper
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
         const icon = document.getElementById('toast-icon');
         const msg = document.getElementById('toast-msg');
-
         msg.textContent = message;
         if (isError) {
             icon.textContent = 'error';
@@ -553,19 +470,456 @@
             icon.textContent = 'check_circle';
             icon.className = 'material-symbols-outlined text-secondary';
         }
-
         toast.classList.remove('hidden');
         setTimeout(() => {
             toast.classList.add('hidden');
         }, 3000);
     }
 
-    // Save profile form submission
-    document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!currentUserId) return;
+    function ensureEntryId(entry) {
+        if (!entry.id) entry.id = `entry-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        return entry.id;
+    }
 
+    function renderCertifications() {
+        const container = document.getElementById('certifications-form-list');
+        if (!container) return;
+        if (certifications.length === 0) {
+            container.innerHTML = '<div class="rounded-xl border border-dashed border-outline-variant/50 p-4 text-sm text-on-surface-variant">No certifications yet. Add your first one above.</div>';
+            return;
+        }
+        container.innerHTML = certifications.map((item, index) => {
+            const id = ensureEntryId(item);
+            return `
+                <div class="rounded-xl border border-outline-variant/40 p-3 bg-surface-container-low/20 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-semibold text-on-surface">Certification ${index + 1}</p>
+                        <button type="button" data-action="remove-certification" data-index="${index}" class="text-xs text-error">Remove</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input data-field="name" data-index="${index}" value="${(item.name || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Certification name"/>
+                        <input data-field="issuer" data-index="${index}" value="${(item.issuer || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Issuing organization"/>
+                        <input data-field="earnedDate" data-index="${index}" type="date" value="${item.earnedDate || ''}" class="custom-input rounded-xl px-3 py-2 text-sm"/>
+                        <input data-field="verificationUrl" data-index="${index}" value="${(item.verificationUrl || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Verification URL (optional)"/>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-on-surface-variant">Certificate file upload (PDF or image, max 5 MB)</label>
+                        <input type="file" data-role="cert-file" data-index="${index}" accept="application/pdf,image/png,image/jpeg,image/jpg" class="custom-input rounded-xl px-3 py-2 text-sm w-full"/>
+                        <div class="text-xs text-on-surface-variant">${item.fileName ? `Current file: ${item.fileName}` : 'No file uploaded yet.'}</div>
+                        ${item.fileUrl ? `<div class="text-xs text-emerald-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Certificate uploaded successfully</div><a href="${item.fileUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">Open uploaded file</a>` : ''}
+                        ${item.uploading ? `<div class="text-xs text-primary flex items-center gap-1"><span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> Uploading... ${item.uploadProgress || 0}%</div>` : ''}
+                        ${item.uploadError ? `<div class="text-xs text-error">${item.uploadError}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderProjects() {
+        const container = document.getElementById('projects-form-list');
+        if (!container) return;
+        if (projects.length === 0) {
+            container.innerHTML = '<div class="rounded-xl border border-dashed border-outline-variant/50 p-4 text-sm text-on-surface-variant">No projects yet. Add your first one above.</div>';
+            return;
+        }
+        container.innerHTML = projects.map((item, index) => {
+            const id = ensureEntryId(item);
+            const techTags = Array.isArray(item.techStack) ? item.techStack.join(', ') : '';
+            return `
+                <div class="rounded-xl border border-outline-variant/40 p-3 bg-surface-container-low/20 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-semibold text-on-surface">Project ${index + 1}</p>
+                        <button type="button" data-action="remove-project" data-index="${index}" class="text-xs text-error">Remove</button>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <input data-field="title" data-index="${index}" value="${(item.title || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Project title"/>
+                        <textarea data-field="description" data-index="${index}" rows="2" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Short description">${(item.description || '').replace(/"/g, '&quot;')}</textarea>
+                        <div class="flex gap-2">
+                            <input data-field="techTag" data-index="${index}" class="custom-input rounded-xl px-3 py-2 text-sm flex-grow" placeholder="Add a tech tag (press Enter)"/>
+                            <button type="button" data-action="add-tech-tag" data-index="${index}" class="liquid-glass-button text-white text-xs px-3 py-2 rounded-xl">Add tag</button>
+                        </div>
+                        <div class="text-xs text-on-surface-variant">Tags: ${techTags || 'No tags yet'}</div>
+                        <input data-field="liveLink" data-index="${index}" value="${(item.liveLink || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Live link (optional)"/>
+                        <input data-field="githubLink" data-index="${index}" value="${(item.githubLink || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="GitHub link (optional)"/>
+                        <label class="text-xs font-semibold text-on-surface-variant">Project thumbnail upload (JPG/PNG, max 5 MB)</label>
+                        <input type="file" data-role="project-file" data-index="${index}" accept="image/png,image/jpeg,image/jpg" class="custom-input rounded-xl px-3 py-2 text-sm w-full"/>
+                        ${item.thumbnailUrl ? `<div class="text-xs text-emerald-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Thumbnail uploaded successfully</div><img src="${item.thumbnailUrl}" alt="${item.title}" class="w-full h-32 object-cover rounded-xl border border-outline-variant"/>` : ''}
+                        ${item.uploading ? `<div class="text-xs text-primary flex items-center gap-1"><span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> Uploading... ${item.uploadProgress || 0}%</div>` : ''}
+                        ${item.uploadError ? `<div class="text-xs text-error">${item.uploadError}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderSkills() {
+        const offeredContainer = document.getElementById('skills-offered-tags');
+        const wantedContainer = document.getElementById('skills-wanted-tags');
+
+        if (offeredContainer) {
+            if (skillsOffered.length === 0) {
+                offeredContainer.innerHTML = '<span class="text-xs text-on-surface-variant/60 italic p-1">No skills added yet</span>';
+            } else {
+                offeredContainer.innerHTML = skillsOffered.map((skill, index) => `
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary border border-secondary/30 text-xs font-semibold select-none">
+                        <span>${skill}</span>
+                        <button type="button" data-action="remove-offered-skill" data-index="${index}" class="text-on-surface hover:text-error transition-colors flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        if (wantedContainer) {
+            if (skillsWanted.length === 0) {
+                wantedContainer.innerHTML = '<span class="text-xs text-on-surface-variant/60 italic p-1">No skills wanted yet</span>';
+            } else {
+                wantedContainer.innerHTML = skillsWanted.map((skill, index) => `
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-container/15 text-tertiary border border-tertiary/30 text-xs font-semibold select-none">
+                        <span>${skill}</span>
+                        <button type="button" data-action="remove-wanted-skill" data-index="${index}" class="text-on-surface hover:text-error transition-colors flex items-center">
+                            <span class="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    function setPhotoStatus(message, isError = false) {
+        photoStatusEl.textContent = message;
+        photoStatusEl.className = isError ? 'text-xs text-error' : 'text-xs text-on-surface-variant';
+    }
+
+    async function uploadUserFile(file, folder, onProgress) {
+        if (!file) throw new Error('No file selected.');
+        if (!allowedFileTypes.includes(file.type)) {
+            throw new Error('Please choose a JPG, PNG, or PDF file.');
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            throw new Error('Please choose a file smaller than 5 MB.');
+        }
+
+        const filePath = `${folder}/${currentUserId || 'guest'}/${Date.now()}-${file.name}`;
+        const storageRef = ref(storage, filePath);
+
+        try {
+            // Attempt uploadBytesResumable with progress monitoring
+            return await new Promise((resolve, reject) => {
+                let resolved = false;
+                const uploadTask = uploadBytesResumable(storageRef, file);
+
+                uploadTask.on('state_changed', (snapshot) => {
+                    if (snapshot.totalBytes > 0) {
+                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        if (typeof onProgress === 'function') onProgress(progress);
+                    }
+                }, (error) => {
+                    console.warn('[Upload] Resumable task failed, falling back to uploadBytes:', error);
+                    if (!resolved) {
+                        resolved = true;
+                        // Fallback to standard uploadBytes
+                        uploadBytes(storageRef, file).then(async (snap) => {
+                            if (typeof onProgress === 'function') onProgress(100);
+                            const downloadURL = await getDownloadURL(snap.ref);
+                            resolve({ url: downloadURL, fileName: file.name, type: file.type });
+                        }).catch(reject);
+                    }
+                }, async () => {
+                    if (!resolved) {
+                        resolved = true;
+                        if (typeof onProgress === 'function') onProgress(100);
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve({ url: downloadURL, fileName: file.name, type: file.type });
+                    }
+                });
+
+                // Safety timeout fallback if resumable task gets stuck at 0%
+                setTimeout(() => {
+                    if (!resolved && uploadTask.snapshot.bytesTransferred === 0) {
+                        console.warn('[Upload] Resumable task timed out, using uploadBytes fallback...');
+                        resolved = true;
+                        uploadBytes(storageRef, file).then(async (snap) => {
+                            if (typeof onProgress === 'function') onProgress(100);
+                            const downloadURL = await getDownloadURL(snap.ref);
+                            resolve({ url: downloadURL, fileName: file.name, type: file.type });
+                        }).catch(reject);
+                    }
+                }, 4000);
+            });
+        } catch (err) {
+            console.error('[Upload] Storage upload error:', err);
+            throw new Error(err.message || 'Upload failed. Please try another file.');
+        }
+    }
+
+    async function handleFileUpload(file, entryType, index) {
+        if (!currentUserId) {
+            showToast('Please wait — user session is loading. Try again.', true);
+            return;
+        }
+        const target = entryType === 'certification' ? certifications[index] : projects[index];
+        if (!target) return;
+
+        target.uploading = true;
+        target.uploadProgress = 0;
+        target.uploadError = '';
+        if (entryType === 'certification') renderCertifications(); else renderProjects();
+
+        // Progress callback — re-renders the card on each Firebase progress tick
+        const onProgress = (progress) => {
+            target.uploadProgress = progress;
+            if (entryType === 'certification') renderCertifications(); else renderProjects();
+        };
+
+        try {
+            const result = await uploadUserFile(file, `portfolio/${entryType}s`, onProgress);
+            // Correctly map fields: certifications use fileUrl/fileName, projects use thumbnailUrl/thumbnailName
+            if (entryType === 'certification') {
+                target.fileUrl = result.url;
+                target.fileName = result.fileName;
+                target.fileType = result.type;
+            } else {
+                target.thumbnailUrl = result.url;
+                target.thumbnailName = result.fileName;
+                target.thumbnailType = result.type;
+            }
+            target.uploading = false;
+            target.uploadProgress = 100;
+            target.uploadError = '';
+        } catch (error) {
+            target.uploading = false;
+            target.uploadProgress = 0;
+            target.uploadError = error.message || 'Upload failed. Please try another file.';
+        }
+        if (entryType === 'certification') renderCertifications(); else renderProjects();
+    }
+
+    document.getElementById('add-certification-btn').addEventListener('click', () => {
+        certifications.push({ name: '', issuer: '', earnedDate: '', verificationUrl: '', fileUrl: '', fileName: '', fileType: '' });
+        renderCertifications();
+    });
+
+    document.getElementById('add-project-btn').addEventListener('click', () => {
+        projects.push({ title: '', description: '', techStack: [], liveLink: '', githubLink: '', thumbnailUrl: '', thumbnailName: '', thumbnailType: '' });
+        renderProjects();
+    });
+
+    document.getElementById('add-skill-btn').addEventListener('click', () => {
+        const input = document.getElementById('skills-offered-input');
+        const value = input.value.trim();
+        if (value && !skillsOffered.includes(value)) {
+            skillsOffered.push(value);
+            input.value = '';
+            renderSkills();
+        }
+    });
+
+    document.getElementById('add-skills-wanted-btn').addEventListener('click', () => {
+        const input = document.getElementById('skills-wanted-input');
+        const value = input.value.trim();
+        if (value && !skillsWanted.includes(value)) {
+            skillsWanted.push(value);
+            input.value = '';
+            renderSkills();
+        }
+    });
+
+    document.getElementById('skills-offered-input').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('add-skill-btn').click();
+        }
+    });
+
+    document.getElementById('skills-wanted-input').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            document.getElementById('add-skills-wanted-btn').click();
+        }
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'remove-certification') {
+            certifications.splice(Number(button.dataset.index), 1);
+            renderCertifications();
+        } else if (action === 'remove-project') {
+            projects.splice(Number(button.dataset.index), 1);
+            renderProjects();
+        } else if (action === 'remove-skill' || action === 'remove-offered-skill') {
+            skillsOffered.splice(Number(button.dataset.index), 1);
+            renderSkills();
+        } else if (action === 'remove-wanted-skill') {
+            skillsWanted.splice(Number(button.dataset.index), 1);
+            renderSkills();
+        } else if (action === 'add-tech-tag') {
+            const index = Number(button.dataset.index);
+            const project = projects[index];
+            const input = document.querySelector(`[data-field="techTag"][data-index="${index}"]`);
+            const tag = input?.value.trim();
+            if (project && tag && !project.techStack.includes(tag)) {
+                project.techStack.push(tag);
+                input.value = '';
+                renderProjects();
+            }
+        }
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('change', (event) => {
+        const target = event.target;
+        if (target.id === 'profile-photo-file' && target.files?.[0]) {
+            const file = target.files[0];
+            setPhotoStatus('Uploading profile picture...');
+            uploadUserFile(file, 'portfolio/profile-photo').then((result) => {
+                photoURL = result.url;
+                avatarPreview.src = result.url;
+                document.getElementById('top-nav-avatar').src = result.url;
+                setPhotoStatus('Profile picture updated.');
+            }).catch((error) => {
+                setPhotoStatus(error.message, true);
+            });
+            return;
+        }
+        if (target.dataset.role === 'cert-file') {
+            const index = Number(target.dataset.index);
+            handleFileUpload(target.files[0], 'certification', index);
+            return;
+        }
+        if (target.dataset.role === 'project-file') {
+            const index = Number(target.dataset.index);
+            handleFileUpload(target.files[0], 'project', index);
+        }
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('input', (event) => {
+        const target = event.target;
+        if (target.dataset.field === 'name' && target.dataset.index !== undefined) {
+            certifications[Number(target.dataset.index)].name = target.value;
+        } else if (target.dataset.field === 'issuer' && target.dataset.index !== undefined) {
+            certifications[Number(target.dataset.index)].issuer = target.value;
+        } else if (target.dataset.field === 'earnedDate' && target.dataset.index !== undefined) {
+            certifications[Number(target.dataset.index)].earnedDate = target.value;
+        } else if (target.dataset.field === 'verificationUrl' && target.dataset.index !== undefined) {
+            certifications[Number(target.dataset.index)].verificationUrl = target.value;
+        } else if (target.dataset.field === 'title' && target.dataset.index !== undefined) {
+            projects[Number(target.dataset.index)].title = target.value;
+        } else if (target.dataset.field === 'description' && target.dataset.index !== undefined) {
+            projects[Number(target.dataset.index)].description = target.value;
+        } else if (target.dataset.field === 'liveLink' && target.dataset.index !== undefined) {
+            projects[Number(target.dataset.index)].liveLink = target.value;
+        } else if (target.dataset.field === 'githubLink' && target.dataset.index !== undefined) {
+            projects[Number(target.dataset.index)].githubLink = target.value;
+        }
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (target.dataset.field === 'techTag' && event.key === 'Enter') {
+            event.preventDefault();
+            const index = Number(target.dataset.index);
+            const project = projects[index];
+            const value = target.value.trim();
+            if (project && value && !project.techStack.includes(value)) {
+                project.techStack.push(value);
+                target.value = '';
+                renderProjects();
+            }
+        }
+    });
+
+    const onboardingBanner = document.getElementById('onboarding-banner');
+    const onboardingStepPill = document.getElementById('onboarding-step-pill');
+    const skipButton = document.getElementById('skip-profile-btn');
+
+    const sectionToFocus = new URLSearchParams(window.location.search).get('section');
+    const sectionMap = {
+        basic: 'basic-info-section',
+        basics: 'basic-info-section',
+        certifications: 'certifications-section',
+        projects: 'projects-section',
+        skills: 'skills-section'
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+        currentUserId = user.uid;
+
+        document.getElementById('profile-name-input').value = user.displayName || '';
+        if (user.photoURL) {
+            profilePicInput.value = user.photoURL;
+            avatarPreview.src = user.photoURL;
+            document.getElementById('top-nav-avatar').src = user.photoURL;
+        }
+
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userDocRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                document.getElementById('profile-name-input').value = userData.displayName || userData.name || user.displayName || '';
+                document.getElementById('profile-college-input').value = userData.college || '';
+                document.getElementById('profile-major-input').value = userData.major || '';
+                document.getElementById('profile-linkedin-input').value = userData.linkedinUrl || '';
+                document.getElementById('profile-github-input').value = userData.githubUrl || '';
+                document.getElementById('profile-bio-input').value = userData.bio || userData.profileBio || '';
+                
+                const sideCollege = document.getElementById('side-nav-college');
+                const collegeVal = (userData.college || '').toString().trim();
+                if (sideCollege) {
+                    sideCollege.innerHTML = collegeVal
+                        ? `<span>${collegeVal}</span>`
+                        : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
+                }
+                
+                photoURL = userData.photoURL || userData.photoUrl || '';
+                if (photoURL) {
+                    profilePicInput.value = photoURL;
+                    avatarPreview.src = photoURL;
+                    document.getElementById('top-nav-avatar').src = photoURL;
+                }
+                certifications = Array.isArray(userData.certifications) ? userData.certifications : [];
+                projects = Array.isArray(userData.projects) ? userData.projects : [];
+                skillsOffered = Array.isArray(userData.skillsOffered) ? userData.skillsOffered.filter(Boolean) : (Array.isArray(userData.skillsToTeach) ? userData.skillsToTeach.filter(Boolean) : []);
+                skillsWanted = Array.isArray(userData.skillsWanted) ? userData.skillsWanted.filter(Boolean) : (Array.isArray(userData.skillsToLearn) ? userData.skillsToLearn.filter(Boolean) : []);
+                renderCertifications();
+                renderProjects();
+                renderSkills();
+                isFirstTimeSetup = !Boolean(userData.profileSetupComplete || userData.bio || userData.profileBio || userData.certifications?.length || userData.projects?.length || userData.skillsOffered?.length || userData.skillsToTeach?.length || userData.skillsWanted?.length || userData.skillsToLearn?.length);
+                if (isFirstTimeSetup) {
+                    onboardingBanner.classList.remove('hidden');
+                    onboardingStepPill.textContent = 'First-time setup';
+                    skipButton.classList.remove('hidden');
+                } else {
+                    onboardingBanner.classList.add('hidden');
+                    skipButton.classList.add('hidden');
+                }
+
+                const targetId = sectionMap[sectionToFocus] || null;
+                if (targetId) {
+                    setTimeout(() => {
+                        const target = document.getElementById(targetId);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 250);
+                }
+            }
+        } catch (error) {
+            console.error('[EditProfile] Error loading user document:', error);
+            showToast('Error loading profile data from server', true);
+        }
+    });
+
+    document.getElementById('edit-profile-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!currentUserId) return;
         const saveBtn = document.getElementById('save-profile-btn');
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span> Saving...';
@@ -574,57 +928,78 @@
         const college = document.getElementById('profile-college-input').value.trim();
         const major = document.getElementById('profile-major-input').value.trim();
         const linkedinUrl = document.getElementById('profile-linkedin-input').value.trim();
-        const photoURL = profilePicInput.value.trim();
+        const githubUrl = document.getElementById('profile-github-input').value.trim();
+        const bio = document.getElementById('profile-bio-input').value.trim();
+
+        if (isFirstTimeSetup && (!displayName || !bio)) {
+            showToast('Please add your name and bio before continuing.', true);
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">save</span> Save Changes';
+            return;
+        }
 
         try {
-            // 1. Update Auth User details
-            if (auth.currentUser) {
-                await updateProfile(auth.currentUser, {
-                    displayName: displayName,
-                    photoURL: photoURL || null
-                });
-            }
-
-            // 2. Update Firestore profile document
-            const userDocRef = doc(db, 'users', currentUserId);
-            await setDoc(userDocRef, {
+            const profilePayload = {
                 uid: currentUserId,
                 displayName: displayName,
                 name: displayName,
                 college: college,
                 major: major,
                 linkedinUrl: linkedinUrl,
+                githubUrl: githubUrl,
+                bio: bio,
                 photoURL: photoURL || null,
-                skillsToTeach: teachSkills,
-                skillsToLearn: learnSkills,
+                certifications: certifications.filter(item => item.name || item.issuer || item.earnedDate || item.verificationUrl || item.fileUrl),
+                projects: projects.filter(item => item.title || item.description || item.liveLink || item.githubLink || item.thumbnailUrl || (Array.isArray(item.techStack) && item.techStack.length)),
+                skillsOffered: skillsOffered.filter(Boolean),
+                skillsToTeach: skillsOffered.filter(Boolean),
+                skillsWanted: skillsWanted.filter(Boolean),
+                skillsToLearn: skillsWanted.filter(Boolean),
+                profileSetupComplete: Boolean(displayName && bio),
+                onboardingCompleted: true,
                 updatedAt: new Date().toISOString()
-            }, { merge: true });
+            };
 
-            showToast("Profile changes saved successfully!");
+            // Instant local update & broadcast across tabs/pages
+            window.SkillSwapState.saveUserProfile(profilePayload);
 
-            // Update local header UI immediately
-            document.getElementById('top-nav-avatar').src = photoURL || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w';
-            document.getElementById('side-nav-college').textContent = college;
-
-            // Wait a brief moment to show success message and then redirect
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: displayName,
+                    photoURL: photoURL || null
+                });
+            }
+            const userDocRef = doc(db, 'users', currentUserId);
+            await setDoc(userDocRef, profilePayload, { merge: true });
+            showToast('Profile changes saved successfully!');
             setTimeout(() => {
-                window.location.href = 'student_dashboard.html';
-            }, 1200);
-
+                window.location.href = 'student_portfolio.html';
+            }, 1000);
         } catch (error) {
-            console.error("[EditProfile] Save changes failed:", error);
-            showToast("Failed to save changes: " + error.message, true);
+            console.error('[EditProfile] Save changes failed:', error);
+            showToast('Failed to save changes: ' + error.message, true);
             saveBtn.disabled = false;
             saveBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">save</span> Save Changes';
         }
     });
 
-    // Logout Button
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = 'index.html';
-        });
+    skipButton.addEventListener('click', async () => {
+        if (isFirstTimeSetup && (!document.getElementById('profile-name-input').value.trim() || !document.getElementById('profile-bio-input').value.trim())) {
+            showToast('Please add your name and bio before skipping.', true);
+            return;
+        }
+        document.getElementById('save-profile-btn').click();
     });
+
+    // Null-guard: logout-btn only exists on some page layouts
+    const logoutBtnEl = document.getElementById('logout-btn');
+    if (logoutBtnEl) {
+        logoutBtnEl.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+    }
 </script>
 </body>
 </html>

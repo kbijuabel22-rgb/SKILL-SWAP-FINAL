@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-
 <html class="dark" lang="en" style="background:#06040f"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Student Portfolio - SkillSwap</title>
+<script src="app-state.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="webgl_bg.js"></script>
@@ -199,42 +199,49 @@
     </style>
 </head>
 <body class="bg-background text-on-background flex flex-col min-h-screen">
-<!-- TopNavBar -->
-<header class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+<header class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 shadow-[0_4px_20px_rgba(108,99,255,0.08)]">
 <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
-<div class="flex items-center gap-md">
-<a class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight" href="student_dashboard.html">SkillSwap</a>
-</div>
-<div class="flex-1 max-w-md mx-md hidden md:block">
-<div class="relative">
-<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
-<input class="w-full bg-surface-container rounded-full py-sm pl-xl pr-sm text-body-md font-body-md border-none focus:ring-2 focus:ring-primary outline-none" placeholder="Search skills, students..." type="text"/>
-</div>
-</div>
-<div class="flex items-center gap-sm">
-<button aria-label="Notifications" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button aria-label="Workspace Premium" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
-</button>
-<button aria-label="Wallet" class="p-xs text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
-</button>
-<a href="edit_profile.html" class="cursor-pointer hover:ring-2 hover:ring-primary transition-all rounded-full block" title="Edit Profile">
-<img id="top-nav-avatar" alt="Student avatar with status" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container" data-alt="A clean, professional headshot of an Indian college student with a slight smile, well-lit in a modern campus setting, serving as a user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLW9j9XFjzBy074Tt6mwSzYyladtEpiG9L9etHxTCOUm-mTjAHIjq5Um9Vn198VDksTRxtYe2Ui9LQVmaBV6C2XklgDudfkvI00kcxm5pRUX0RQeBiy28baMIZpDiiQnR51TNzgmcloJt9bhhDECKX4xbJX2ilQG6lsMZkUWW-BVgznAQrDgN1vkzjPmXflmAAO_jOUIfKSmWfpR6XT1v45HjOy5C97C52f1Psy2gJGeEisSIM20pSkZ4DkDMod8EViLPpOPfNWRI"/>
+<a href="student_dashboard.html" class="flex items-center gap-2">
+<span class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
 </a>
+
+<div class="flex items-center gap-sm">
+<!-- 1. Profile Avatar -->
+<a href="edit_profile.html" class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
+<img id="top-nav-avatar" alt="Student avatar" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"/>
+</a>
+
+<!-- 2. Notification Bell Icon -->
+<div class="relative" id="notifications-wrapper">
+<button id="bell-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+<span id="notification-badge" class="absolute top-0 right-0 bg-error text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+</button>
+
+<div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-surface-container-high border border-outline-variant rounded-xl shadow-lg flex flex-col overflow-hidden opacity-0 pointer-events-none transition-all duration-200 transform scale-95 origin-top-right z-50">
+    <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-highest">
+        <h3 class="font-title-md text-sm font-bold text-on-surface">Notifications</h3>
+    </div>
+    <div id="notifications-list" class="max-h-64 overflow-y-auto p-2 flex flex-col gap-1 hide-scrollbar">
+        <div class="p-4 text-center text-sm text-on-surface-variant opacity-70">No new notifications</div>
+    </div>
+</div>
+</div>
+
+<!-- 3. Hamburger Menu Button -->
+<button id="hamburger-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Settings & Preferences">
+<span class="material-symbols-outlined">menu</span>
+</button>
 </div>
 </div>
 </header>
 <div class="flex flex-1 overflow-hidden">
-<!-- SideNavBar -->
 <aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
 <div class="flex items-center gap-md mb-lg px-2">
 <img alt="Campus Logo" class="w-12 h-12 rounded-lg object-cover" data-alt="A stylized logo for a fictional university department. It features a modern geometric crest in deep indigo and bright cyan on a crisp white background. The design is clean, corporate-academic, and highly professional, suggesting an engineering or computer science focus. The lighting is neutral studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrsiv54f6J8jZA8L-X5__3MdKM4sWfi2_Z59wyrF12qf7YAEdqhuLUKJcsAy4UheSIdZFF9iS_tnlCbxzKp-ebpV36wupzjYt8HPbKCYeOCq3bPEhcAFCy0MWiuKB_DDwW3VIDapAowExUEbRB82rqLqJCHvW5F79yrIWXg5X2iObMDtEfFbAReHa9Dryq7FcuMLelAIOoZamF_XrHepSXoZlJNDBq0cj-vXHtOosKYjLQlq9KSs5nTdU9ywUrzMXE5s4kiVP7o5U"/>
 <div>
-<h2 class="font-title-md text-title-md text-primary font-bold">IIT Bombay</h2>
-<p class="font-label-caps text-label-caps text-on-surface-variant">Computer Science Dept.</p>
+<h2 id="side-nav-college" class="font-title-md text-title-md text-primary font-bold"><a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a></h2>
+<p id="side-nav-dept" class="font-label-caps text-label-caps text-on-surface-variant">&#x2014;</p>
 </div>
 </div>
 <nav class="flex flex-col gap-xs flex-1">
@@ -254,14 +261,10 @@
 <span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
 <span class="font-label-caps text-label-caps">Portfolio</span>
 </a>
-
 </nav>
-<button onclick="window.location.href='teach_skill.html'" class="mt-auto gradient-primary text-on-primary font-title-md text-title-md py-3 rounded-xl shadow-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2"><span class="material-symbols-outlined">school</span> Teach Skill</button>
 </aside>
 <main class="flex-1 lg:ml-64 w-full max-w-container-max mx-auto px-gutter py-xl">
-<!-- Profile Header -->
 <section class="glass-panel rounded-xl p-lg mb-xl shadow-[0_4px_20px_rgba(108,99,255,0.08)] relative overflow-hidden">
-<!-- Decorative gradient orb -->
 <div class="absolute -top-20 -right-20 w-64 h-64 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
 <div class="flex flex-col md:flex-row gap-lg items-start md:items-center relative z-10">
 <div class="relative group cursor-pointer">
@@ -272,172 +275,88 @@
 </div>
 <div class="flex-1">
 <div class="flex flex-wrap items-center gap-sm mb-xs">
-<h1 id="portfolio-name" class="font-headline-lg text-headline-lg md:text-display-lg md:font-display-lg text-on-background">Aarav Patel</h1>
-<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-primary font-badge-text text-badge-text border border-primary-fixed">
+<h1 id="portfolio-name" class="font-headline-lg text-headline-lg md:text-display-lg md:font-display-lg text-on-background">Loading...</h1>
+<span id="portfolio-school-badge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-primary font-badge-text text-badge-text border border-primary-fixed">
 <span class="material-symbols-outlined text-[16px]" data-icon="school">school</span>
-                            IIT Bombay - CS
-                        </span>
+<span id="portfolio-school">Loading...</span>
+</span>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mb-md">
-                        Passionate about building scalable systems and sharing knowledge. Looking to swap Advanced Python skills for UI/UX principles. Active open-source contributor.
-                    </p>
+<p id="portfolio-bio" class="font-body-md text-body-md text-on-surface-variant max-w-2xl mb-md">
+ 
+</p>
 <div class="flex flex-wrap gap-sm">
-<button class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-title-md text-title-md shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-<span class="material-symbols-outlined" data-icon="picture_as_pdf">picture_as_pdf</span>
-                            Export as PDF
-                        </button>
+<a id="portfolio-edit-link" href="edit_profile.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-transparent text-primary font-title-md text-title-md border-2 border-primary hover:bg-primary-container/10 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+Edit Profile
+</a>
+<a id="complete-profile-btn" href="edit_profile.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-title-md text-title-md shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+Complete Your Profile
+</a>
 <a id="linkedin-connect-btn" target="_blank" href="https://www.linkedin.com" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-transparent text-primary font-title-md text-title-md border-2 border-primary hover:bg-primary-container/10 transition-all duration-300">
 <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
-                            Connect
-                        </a>
+Connect
+</a>
+<a id="github-link-btn" target="_blank" href="#" class="hidden inline-flex items-center gap-2 px-6 py-3 rounded-full bg-transparent text-on-surface font-title-md text-title-md border-2 border-outline-variant hover:bg-surface-container-high transition-all duration-300">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+GitHub
+</a>
 </div>
 </div>
-<!-- Credit Stats -->
 <div class="flex md:flex-col gap-md p-md bg-surface-container rounded-xl min-w-[150px] justify-center text-center">
 <div>
 <div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-xs">Swaps</div>
-<div class="font-headline-lg text-headline-lg text-primary">42</div>
+<div id="portfolio-swaps-count" class="font-headline-lg text-headline-lg text-primary">0</div>
 </div>
 <div class="h-px w-full bg-outline-variant hidden md:block"></div>
 <div class="w-px h-full bg-outline-variant md:hidden"></div>
 <div>
 <div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-xs">Credits</div>
-<div class="font-headline-lg text-headline-lg text-secondary">1,250</div>
+<div id="portfolio-credits-count" class="font-headline-lg text-headline-lg text-secondary">0</div>
 </div>
 </div>
 </div>
 </section>
-<!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-xl">
-<!-- Left Column: Skills & History -->
 <div class="lg:col-span-2 space-y-xl">
-<!-- Skills Mastery -->
 <section>
 <h2 class="font-headline-lg text-headline-lg text-on-background mb-lg flex items-center gap-sm">
 <span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
-                        Skills Mastery
-                    </h2>
+Skills Mastery
+</h2>
 <div id="portfolio-skills-container" class="grid grid-cols-1 md:grid-cols-2 gap-md">
-<!-- Javascript will inject skills here -->
 </div>
 </section>
-<!-- Swap History -->
 <section>
 <h2 class="font-headline-lg text-headline-lg text-on-background mb-lg flex items-center gap-sm">
 <span class="material-symbols-outlined text-primary" data-icon="history">history</span>
-                        Recent Swaps
-                    </h2>
-<div class="pl-md relative border-l-2 border-surface-container-high space-y-lg">
-<!-- Timeline Item 1 -->
-<div class="relative timeline-node success pl-lg">
-<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:shadow-md transition-shadow">
-<div class="flex justify-between items-start mb-sm">
-<h3 class="font-title-md text-title-md text-on-surface">Taught Python Basics</h3>
-<span class="font-label-caps text-label-caps text-tertiary flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
-                                        Completed
-                                    </span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Helped a design student set up their first Django project.</p>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-sm">
-<img alt="Student" class="w-8 h-8 rounded-full" data-alt="Small circular avatar of a female student with glasses, smiling, bright lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4zB5kMVXdV8aIgPb4YIXYSnO7GPeL4rONeR4OlCmjSn1ipL6OVjtOUTQzgcRQPgwQ_2V5dOjUPqB6LB1UMhhKGqOINNShgKqQ98iXVXI6HQfCQQ8aZOQ3lB68zLaEcwJv1VBjLqmPHdfm280se6H2GMkyDZhG1MITL5d0g5vnc9wY6yIjdnRz7syrqWxRlm5QaZ1bb--Jx86EPML88vU_D-Z9HaSU-oorHasju4NCcG8k1OemWu23fKogp79EhtyYxo_J-4UsO7o"/>
-<span class="font-badge-text text-badge-text text-on-surface">with Priya S.</span>
-</div>
-<span class="font-badge-text text-badge-text text-primary font-bold">+50 Credits</span>
-</div>
-</div>
-</div>
-<!-- Timeline Item 2 -->
-<div class="relative timeline-node pl-lg">
-<div class="bg-surface rounded-xl p-md border border-primary/20 shadow-sm hover:shadow-md transition-shadow ring-1 ring-primary/10">
-<div class="flex justify-between items-start mb-sm">
-<h3 class="font-title-md text-title-md text-on-surface">Learning Figma Auto-Layout</h3>
-<span class="font-label-caps text-label-caps text-primary flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]" data-icon="pending">pending</span>
-                                        Scheduled
-                                    </span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Upcoming session to improve UI/UX practical skills.</p>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-sm">
-<img alt="Student" class="w-8 h-8 rounded-full" data-alt="Small circular avatar of a male student in a graphic tee, casual setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcJ09-b2EyV7AYoC8sbjqNToU3yFt70kMRK30irgfcoFzqSHuSCWeIha9L4W6k7W7KdiqWrO9HxpF4iCsX16CidbTbq_W9fqP8sB43BnIMaoTYWIn2RG7FBPXEazsNuPmzH1Pjn5g-Dk4KKhcWlE1yq4RD_rSAezkgGa8NReTkm1uQbOVVrSe73gpcjiAq1tE-C6fS0OdiGh-mQz4zTuS9yTE42NvQzjtOduFi4JCiS3zPf5dA5Foce_LkFhmd1r7rbbFvDF4Rz7o"/>
-<span class="font-badge-text text-badge-text text-on-surface">with Rohan K.</span>
-</div>
-<span class="font-label-caps text-label-caps text-on-surface-variant">Tomorrow, 4 PM</span>
-</div>
-</div>
-</div>
+Recent Swaps
+</h2>
+<div id="swaps-timeline-container" class="pl-md relative border-l-2 border-surface-container-high space-y-lg">
+<!-- Dynamic swaps injected by JS -->
+<div class="bg-surface rounded-xl p-md border border-outline-variant text-on-surface-variant text-sm">Loading swap history...</div>
 </div>
 </section>
 </div>
-<!-- Right Column: Certs & Projects -->
 <div class="space-y-xl">
-<!-- Certificates Bento Box -->
 <section>
 <h2 class="font-title-md text-title-md text-on-background mb-md flex items-center gap-sm">
 <span class="material-symbols-outlined text-secondary" data-icon="workspace_premium">workspace_premium</span>
-                        Certifications
-                    </h2>
-<div class="grid grid-cols-2 gap-sm">
-<div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-center aspect-square flex flex-col items-center justify-center group hover:-translate-y-1 transition-transform">
-<span class="material-symbols-outlined text-[40px] text-primary mb-xs" data-icon="military_tech">military_tech</span>
-<h4 class="font-badge-text text-badge-text text-on-surface leading-tight">AWS Cloud<br/>Practitioner</h4>
-<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">2023</p>
-</div>
-<div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-center aspect-square flex flex-col items-center justify-center group hover:-translate-y-1 transition-transform">
-<span class="material-symbols-outlined text-[40px] text-[#0077B6] mb-xs" data-icon="code">code</span>
-<h4 class="font-badge-text text-badge-text text-on-surface leading-tight">Python<br/>Specialist</h4>
-<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Coursera</p>
-</div>
-</div>
+Certifications
+</h2>
+<div id="certifications-list" class="grid grid-cols-1 gap-sm"></div>
 </section>
-<!-- Featured Projects (GitHub) -->
 <section>
 <h2 class="font-title-md text-title-md text-on-background mb-md flex items-center gap-sm">
 <span class="material-symbols-outlined text-on-surface" data-icon="folder_open">folder_open</span>
-                        Featured Projects
-                    </h2>
-<div class="space-y-md">
-<!-- Project 1 -->
-<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
-<div class="flex justify-between items-start mb-xs">
-<h3 class="font-title-md text-title-md text-primary group-hover:underline">CampusRide</h3>
-<span class="material-symbols-outlined text-on-surface-variant text-[20px]" data-icon="open_in_new">open_in_new</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm line-clamp-2">A carpooling app for university students built with Django and React Native.</p>
-<div class="flex items-center gap-md">
-<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
-<span class="w-3 h-3 rounded-full bg-[#0077B6]"></span> Python
-                                </span>
-<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
-<span class="material-symbols-outlined text-[14px]" data-icon="star">star</span> 24
-                                </span>
-</div>
-</div>
-<!-- Project 2 -->
-<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
-<div class="flex justify-between items-start mb-xs">
-<h3 class="font-title-md text-title-md text-primary group-hover:underline">AutoGrader CLI</h3>
-<span class="material-symbols-outlined text-on-surface-variant text-[20px]" data-icon="open_in_new">open_in_new</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm line-clamp-2">Command line tool to automate test case evaluation for CS101 assignments.</p>
-<div class="flex items-center gap-md">
-<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
-<span class="w-3 h-3 rounded-full bg-primary"></span> Shell
-                                </span>
-<span class="flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant">
-<span class="material-symbols-outlined text-[14px]" data-icon="star">star</span> 12
-                                </span>
-</div>
-</div>
-</div>
+Featured Projects
+</h2>
+<div id="projects-list" class="space-y-md"></div>
 </section>
 </div>
 </div>
 </main>
 </div>
-<!-- Footer -->
 <footer class="bg-surface-container-lowest dark:bg-surface-container-highest text-on-surface-variant dark:text-on-surface-variant font-label-caps text-label-caps w-full py-lg mt-auto border-t border-outline-variant dark:border-outline/10 flat no shadows">
 <div class="max-w-container-max mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
 <div class="font-bold text-primary">SkillSwap</div>
@@ -453,7 +372,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { initializeFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
@@ -470,84 +389,311 @@
         experimentalForceLongPolling: true
     });
 
-    onAuthStateChanged(auth, async (user) => {
+    function getPreferredDisplayName(user, userData = null) {
+        const candidates = [
+            userData?.displayName,
+            userData?.name,
+            user?.displayName,
+            user?.providerData?.[0]?.displayName,
+            user?.email?.split('@')[0]
+        ];
+        for (const candidate of candidates) {
+            if (typeof candidate === 'string' && candidate.trim()) {
+                return candidate.trim();
+            }
+        }
+        return 'Student';
+    }
+
+    function isProfileIncomplete(userData = {}) {
+        const hasBio = Boolean((userData.bio || userData.profileBio || '').toString().trim());
+        const hasCerts = Array.isArray(userData.certifications) && userData.certifications.length > 0;
+        const hasProjects = Array.isArray(userData.projects) && userData.projects.length > 0;
+        const hasSkills = Boolean((userData.skillsOffered || userData.skillsToTeach || []).filter(Boolean).length);
+        return !hasBio && !hasCerts && !hasProjects && !hasSkills;
+    }
+
+    function renderEmptyState(containerId, label, actionHref, actionText, icon) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = `
+            <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-4 text-center">
+                <div class="flex justify-center mb-3">
+                    <span class="material-symbols-outlined text-3xl text-primary">${icon}</span>
+                </div>
+                <p class="text-sm text-on-surface-variant">No ${label} added yet.</p>
+                <a href="${actionHref}" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ ${actionText}</a>
+            </div>
+        `;
+    }
+
+    function renderCertifications(certifications) {
+        const container = document.getElementById('certifications-list');
+        if (!container) return;
+        if (!Array.isArray(certifications) || certifications.length === 0) {
+            renderEmptyState('certifications-list', 'certifications', 'edit_profile.html?section=certifications', 'Add certification', 'workspace_premium');
+            return;
+        }
+        container.innerHTML = certifications.map((item) => {
+            const year = item.earnedDate ? new Date(item.earnedDate).getFullYear() : 'N/A';
+            const link = item.fileUrl || item.verificationUrl || null;
+            const linkLabel = item.fileUrl ? 'View certificate' : 'View verification';
+            return `
+                <div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-left group hover:-translate-y-1 transition-transform">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 class="font-badge-text text-badge-text text-on-surface leading-tight">${item.name || 'Certification'}</h4>
+                            <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">${item.issuer || 'Issuer'} &bull; ${year}</p>
+                        </div>
+                        ${link ? `<a href="${link}" target="_blank" rel="noopener noreferrer" class="rounded-full p-2 bg-primary/10 text-primary" title="${linkLabel}"><span class="material-symbols-outlined">open_in_new</span></a>` : '<span class="rounded-full p-2 bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined">description</span></span>'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderProjects(projects) {
+        const container = document.getElementById('projects-list');
+        if (!container) return;
+        if (!Array.isArray(projects) || projects.length === 0) {
+            renderEmptyState('projects-list', 'projects', 'edit_profile.html?section=projects', 'Add project', 'folder_open');
+            return;
+        }
+        container.innerHTML = projects.map((item) => {
+            const techTags = Array.isArray(item.techStack) && item.techStack.length > 0
+                ? item.techStack.map(t => `<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary border border-secondary/20 text-xs font-semibold">${t}</span>`).join('')
+                : '<span class="text-xs text-on-surface-variant">No tech stack listed</span>';
+            const link = item.liveLink || null;
+            const repoLink = item.githubLink || null;
+            return `
+                <div class="bg-surface rounded-xl p-md border border-surface-variant shadow-sm hover:border-primary/50 transition-colors group">
+                    <div class="flex items-start justify-between gap-3 mb-sm">
+                        <div class="flex-1">
+                            <h3 class="font-title-md text-title-md text-primary group-hover:underline">${item.title || 'Project'}</h3>
+                            <p class="font-body-md text-body-md text-on-surface-variant text-sm mt-1">${item.description || 'A project shared by the student.'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            ${link ? `<a href="${link}" target="_blank" rel="noopener noreferrer" class="rounded-full p-2 bg-primary/10 text-primary" title="Open live project"><span class="material-symbols-outlined">open_in_new</span></a>` : ''}
+                            ${repoLink ? `<a href="${repoLink}" target="_blank" rel="noopener noreferrer" class="rounded-full p-2 bg-surface-container-high text-on-surface-variant" title="View GitHub repo"><span class="material-symbols-outlined">code</span></a>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        ${item.thumbnailUrl ? `<img src="${item.thumbnailUrl}" alt="${item.title}" class="w-12 h-12 rounded-lg object-cover border border-outline-variant mr-2"/>` : ''}
+                        ${techTags}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderSwaps(swaps) {
+        const container = document.getElementById('swaps-timeline-container');
+        if (!container) return;
+        if (!Array.isArray(swaps) || swaps.filter(Boolean).length === 0) {
+            container.innerHTML = `
+                <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-6 text-center">
+                    <span class="material-symbols-outlined text-3xl text-primary block mb-2">swap_horiz</span>
+                    <p class="text-sm text-on-surface-variant">No swaps yet &mdash; your completed and upcoming sessions will show up here.</p>
+                    <a href="match_discovery.html" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">Browse Matches</a>
+                </div>`;
+            return;
+        }
+        container.innerHTML = swaps.map((swap) => {
+            const title = swap.title || swap.activity || 'Swap session';
+            const status = swap.status || 'Pending';
+            const partner = swap.with || swap.peerName || swap.partner || 'peer';
+            const description = swap.description || swap.summary || 'Shared learning experience';
+            const changedCredits = typeof swap.creditChange === 'number' ? `${swap.creditChange > 0 ? '+' : ''}${swap.creditChange} Credits` : '';
+            const dateText = swap.date ? new Date(swap.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            const isCompleted = status.toLowerCase().includes('complet');
+            return `
+                <div class="relative timeline-node ${isCompleted ? 'success' : ''} pl-lg">
+                    <div class="bg-surface rounded-xl p-md border ${isCompleted ? 'border-surface-variant' : 'border-primary/20 ring-1 ring-primary/10'} shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-sm">
+                            <h3 class="font-title-md text-title-md text-on-surface">${title}</h3>
+                            <span class="font-label-caps text-label-caps ${isCompleted ? 'text-tertiary' : 'text-primary'} flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">${isCompleted ? 'check_circle' : 'pending'}</span>
+                                ${status}
+                            </span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-sm">${description}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-sm">
+                                <div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+                                    <span class="material-symbols-outlined">school</span>
+                                </div>
+                                <span class="font-badge-text text-badge-text text-on-surface">with ${partner}</span>
+                            </div>
+                            <span class="font-badge-text text-badge-text text-primary font-bold">${changedCredits}</span>
+                        </div>
+                        ${dateText ? `<p class="text-xs text-on-surface-variant mt-3">${dateText}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    onAuthStateChanged(auth, (user) => {
         if (!user) {
             window.location.href = 'index.html';
             return;
         }
 
-        // Apply defaults from Auth state
+        const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+        if (!user.emailVerified && !isGoogleUser) {
+            console.log("[Auth] User email not verified, redirecting to sign in.");
+            window.location.href = 'sign_in.html?unverified=true';
+            return;
+        }
+
         const portNameEl = document.getElementById('portfolio-name');
-        if (portNameEl && user.displayName) portNameEl.textContent = user.displayName;
-
         const portAvatarEl = document.getElementById('portfolio-avatar');
-        if (portAvatarEl && user.photoURL) portAvatarEl.src = user.photoURL;
-
         const topNavAvatarEl = document.getElementById('top-nav-avatar');
+        const portBioEl = document.getElementById('portfolio-bio');
+        const schoolBadgeEl = document.getElementById('portfolio-school');
+        const completeProfileBtn = document.getElementById('complete-profile-btn');
+
+        const defaultName = getPreferredDisplayName(user);
+        if (portNameEl) portNameEl.textContent = defaultName;
+        if (portAvatarEl && user.photoURL) portAvatarEl.src = user.photoURL;
         if (topNavAvatarEl && user.photoURL) topNavAvatarEl.src = user.photoURL;
 
-            let profileName = user.displayName || 'student';
+        const userDocRef = doc(db, 'users', user.uid);
+        onSnapshot(userDocRef, (snap) => {
+            if (!snap.exists()) return;
+            const userData = snap.data();
+            const profileName = getPreferredDisplayName(user, userData);
+            if (portNameEl) portNameEl.textContent = profileName;
 
-            try {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    if (userData.displayName) profileName = userData.displayName;
-                    if (userData.displayName || userData.name) {
-                        profileName = userData.displayName || userData.name;
-                        if (portNameEl) portNameEl.textContent = profileName;
-                    }
-                    if (userData.college) {
-                        const portCollegeEl = document.getElementById('portfolio-college');
-                        if (portCollegeEl) portCollegeEl.textContent = userData.college;
-                    }
-                    
-                    if (userData.photoURL) {
-                        if (portAvatarEl) portAvatarEl.src = userData.photoURL;
-                        if (topNavAvatarEl) topNavAvatarEl.src = userData.photoURL;
-                    }
-                    
-                    // Update LinkedIn connect button to point directly to their LinkedIn profile URL
-                    const connectBtn = document.getElementById('linkedin-connect-btn');
-                    if (connectBtn) {
-                        if (userData.linkedinUrl) {
-                            connectBtn.href = userData.linkedinUrl;
-                        } else {
-                            const slug = profileName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                            connectBtn.href = `https://www.linkedin.com/in/${slug}`;
-                        }
-                    }
-                    
-                    const skillsContainer = document.getElementById('portfolio-skills-container');
-                    if (skillsContainer && userData.skillsToTeach && userData.skillsToTeach.length > 0) {
-                        skillsContainer.innerHTML = userData.skillsToTeach.map(skill => `
-<div class="bg-surface rounded-xl p-md border border-surface-variant shadow-[0_4px_20px_rgba(108,99,255,0.05)] hover:shadow-[0_8px_30px_rgba(108,99,255,0.1)] transition-all duration-300 group">
-<div class="flex justify-between items-start mb-md">
-<div class="flex items-center gap-sm">
-<div class="p-sm rounded-lg bg-secondary-container/20 text-secondary">
-<span class="material-symbols-outlined">star</span>
-</div>
-<div>
-<h3 class="font-title-md text-title-md text-on-surface">${skill}</h3>
-<p class="font-label-caps text-label-caps text-on-surface-variant">Skill Offered</p>
-</div>
-</div>
-</div>
-</div>
-                        `).join('');
-                    } else if (skillsContainer) {
-                        skillsContainer.innerHTML = '<p class="text-on-surface-variant">No skills listed yet. Add them in Teach Skill!</p>';
-                    }
-                } else {
-                    console.log("[Auth] User document missing. Continuing with default view.");
-                }
-            } catch (error) {
-                console.error("[Auth] Error fetching user profile:", error);
+            const bio = (userData.bio || userData.profileBio || '').toString().trim();
+            if (portBioEl) portBioEl.textContent = bio || 'No bio added yet. Click Edit Profile to introduce yourself.';
+
+            if (schoolBadgeEl) {
+                const college = (userData.college || '').trim();
+                const major = (userData.major || userData.department || '').trim();
+                schoolBadgeEl.textContent = college ? `${college}${major ? ' \u2022 ' + major : ''}` : 'Add your college in Edit Profile';
             }
+
+            // Sidebar college/dept
+            const sideCollege = document.getElementById('side-nav-college');
+            const sideDept = document.getElementById('side-nav-dept');
+            if (sideCollege) {
+                const college = (userData.college || '').trim();
+                sideCollege.innerHTML = college
+                    ? `<span>${college}</span>`
+                    : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
+            }
+            if (sideDept) {
+                sideDept.textContent = (userData.major || userData.department || '').trim() || '\u2014';
+            }
+
+            if (userData.photoURL) {
+                if (portAvatarEl) portAvatarEl.src = userData.photoURL;
+                if (topNavAvatarEl) topNavAvatarEl.src = userData.photoURL;
+            }
+
+            // LinkedIn button
+            const connectBtn = document.getElementById('linkedin-connect-btn');
+            if (connectBtn) {
+                connectBtn.href = userData.linkedinUrl || `https://www.linkedin.com`;
+            }
+
+            // GitHub button
+            const githubBtn = document.getElementById('github-link-btn');
+            if (githubBtn) {
+                const gh = (userData.githubUrl || '').trim();
+                if (gh) {
+                    const href = gh.startsWith('http') ? gh : `https://github.com/${gh}`;
+                    githubBtn.href = href;
+                    githubBtn.classList.remove('hidden');
+                } else {
+                    githubBtn.classList.add('hidden');
+                }
+            }
+
+            // Skills Mastery - Syncs Skills Offered + Skills Wanted live
+            function renderPortfolioSkills(data) {
+                const offeredSkills = (data.skillsOffered || data.skillsToTeach || []).filter(Boolean);
+                const wantedSkills = (data.skillsWanted || data.skillsToLearn || []).filter(Boolean);
+                const skillsContainer = document.getElementById('portfolio-skills-container');
+
+                if (!skillsContainer) return;
+
+                if (offeredSkills.length === 0 && wantedSkills.length === 0) {
+                    skillsContainer.innerHTML = `
+                        <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-4 text-center col-span-full">
+                            <span class="material-symbols-outlined text-3xl text-primary block mb-2">psychology</span>
+                            <p class="text-sm text-on-surface-variant">No skills added yet.</p>
+                            <a href="edit_profile.html?section=skills" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ Add skills</a>
+                        </div>`;
+                    return;
+                }
+
+                const offeredHTML = offeredSkills.map(skill => `
+                    <div class="bg-surface rounded-xl p-md border border-secondary/30 shadow-[0_4px_20px_rgba(108,99,255,0.05)] hover:shadow-[0_8px_30px_rgba(108,99,255,0.1)] transition-all duration-300 group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-sm">
+                                <div class="p-sm rounded-lg bg-secondary-container/20 text-secondary">
+                                    <span class="material-symbols-outlined">star</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-title-md text-title-md text-on-surface">${skill}</h3>
+                                    <p class="font-label-caps text-label-caps text-secondary font-semibold">Can Teach</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                const wantedHTML = wantedSkills.map(skill => `
+                    <div class="bg-surface rounded-xl p-md border border-tertiary/30 shadow-[0_4px_20px_rgba(108,99,255,0.05)] hover:shadow-[0_8px_30px_rgba(108,99,255,0.1)] transition-all duration-300 group">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-sm">
+                                <div class="p-sm rounded-lg bg-tertiary-container/20 text-tertiary-fixed-dim">
+                                    <span class="material-symbols-outlined">favorite</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-title-md text-title-md text-on-surface">${skill}</h3>
+                                    <p class="font-label-caps text-label-caps text-tertiary-fixed-dim font-semibold">Wants to Learn</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                skillsContainer.innerHTML = offeredHTML + wantedHTML;
+            }
+
+            renderPortfolioSkills(userData);
+
+            // Subscribe to real-time local state updates
+            window.addEventListener(window.SkillSwapState?.EVENT_KEY || 'userStateUpdated', (e) => {
+                if (e.detail) renderPortfolioSkills(e.detail);
+            });
+
+            // Swaps
+            const swaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
+            const credits = typeof userData.credits === 'number' ? userData.credits : 0;
+            const swapsCountEl = document.getElementById('portfolio-swaps-count');
+            const creditsCountEl = document.getElementById('portfolio-credits-count');
+            if (swapsCountEl) swapsCountEl.textContent = String(swaps.length);
+            if (creditsCountEl) creditsCountEl.textContent = credits.toLocaleString('en-IN');
+            renderSwaps(swaps);
+
+            // Certifications & Projects
+            renderCertifications(userData.certifications || []);
+            renderProjects(userData.projects || []);
+
+            // Complete Profile CTA
+            if (completeProfileBtn) {
+                completeProfileBtn.style.display = isProfileIncomplete(userData) ? 'inline-flex' : 'none';
+            }
+        }, (error) => {
+            console.error('[Portfolio] Error subscribing to user profile:', error);
+        });
     });
 </script>
 <script>
-        // Simple micro-interaction for progress bars on load
         document.addEventListener('DOMContentLoaded', () => {
             const bars = document.querySelectorAll('.bg-gradient-primary, .bg-secondary');
             bars.forEach(bar => {

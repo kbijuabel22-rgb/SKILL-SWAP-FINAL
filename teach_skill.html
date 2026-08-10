@@ -3,8 +3,9 @@
 <html class="dark" lang="en" style="background:#06040f">
 <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>SkillSwap - Teach Skill</title>
+    <script>
+        window.location.href = 'edit_profile.html?section=skills';
+    </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="webgl_bg.js"></script>
@@ -19,6 +20,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+    <script src="app-state.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -326,6 +328,13 @@
             if (!user) {
                 console.log("[Auth] No user found, redirecting to sign in.");
                 window.location.href = 'sign_in.html';
+                return;
+            }
+
+            const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+            if (!user.emailVerified && !isGoogleUser) {
+                console.log("[Auth] User email not verified, redirecting to sign in.");
+                window.location.href = 'sign_in.html?unverified=true';
                 return;
             }
             currentUser = user;

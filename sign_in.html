@@ -5,7 +5,6 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Sign In - SkillSwap</title>
     <script>
-        // Redirect 127.0.0.1 to localhost for Firebase Auth OAuth compliance
         if (window.location.hostname === '127.0.0.1') {
             window.location.hostname = 'localhost';
         }
@@ -54,6 +53,31 @@
 
         <div id="auth-error" class="hidden text-error bg-error-container p-3 rounded-lg text-sm font-medium"></div>
 
+        <!-- Email Verification Banner -->
+        <div id="verification-banner" class="hidden bg-amber-500/15 border border-amber-500/40 rounded-xl p-4 flex flex-col gap-2.5 text-sm text-[#f3effc]">
+            <div class="flex items-start gap-2.5">
+                <span class="material-symbols-outlined text-amber-400 text-xl mt-0.5">warning</span>
+                <div>
+                    <p class="font-bold text-on-surface text-sm">Email Not Verified</p>
+                    <p class="text-[#c7c4d8] text-xs">Please verify your email address to access your dashboard and matches.</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+                <button type="button" id="resend-verification-btn" class="bg-primary hover:opacity-90 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">mail</span>
+                    Resend Email
+                </button>
+                <button type="button" id="check-verification-btn" class="bg-surface-variant hover:bg-surface-container-high border border-outline/40 text-[#f3effc] text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">refresh</span>
+                    Check Status
+                </button>
+                <button type="button" id="verification-signout-btn" class="text-xs text-error hover:underline font-semibold ml-auto">
+                    Sign Out
+                </button>
+            </div>
+            <div id="verification-msg" class="hidden text-xs text-secondary mt-1 font-medium"></div>
+        </div>
+
         <form id="sign-in-form" class="flex flex-col gap-4">
             <div>
                 <label class="block text-sm font-bold text-on-surface mb-1">Email</label>
@@ -88,7 +112,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, sendEmailVerification, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { initializeFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -102,13 +126,10 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        
-        // Force long-polling to bypass strict network firewalls causing 'client is offline' errors
-        const db = initializeFirestore(app, {
-            experimentalForceLongPolling: true
-        });
-
+        const db = initializeFirestore(app, { experimentalForceLongPolling: true });
         const errorDiv = document.getElementById('auth-error');
+        const verificationBanner = document.getElementById('verification-banner');
+        const verificationMsg = document.getElementById('verification-msg');
 
         const getFriendlyErrorMessage = (error) => {
             const code = error.code || "";
@@ -119,49 +140,110 @@
             return error.message || "An unknown error occurred.";
         };
 
+        const isProfileEmpty = (userData = {}) => {
+            const hasBio = Boolean((userData.bio || userData.profileBio || '').toString().trim());
+            const hasCerts = Array.isArray(userData.certifications) && userData.certifications.length > 0;
+            const hasProjects = Array.isArray(userData.projects) && userData.projects.length > 0;
+            const hasSkills = Boolean((userData.skillsOffered || userData.skillsToTeach || []).filter(Boolean).length);
+            return !hasBio && !hasCerts && !hasProjects && !hasSkills;
+        };
+
+        const showCheckYourEmailScreen = () => {
+            const signInForm = document.getElementById('sign-in-form');
+            const googleBtnWrapper = document.getElementById('auth-google-btn')?.parentElement;
+            if (signInForm) signInForm.classList.add('hidden');
+            if (googleBtnWrapper) googleBtnWrapper.classList.add('hidden');
+            verificationBanner.classList.remove('hidden');
+        };
+
         const handleLoginResult = async (user, isGoogle = false) => {
-            console.log(`[Auth] Fetching profile for UID: ${user.uid}`);
             try {
+                const isGoogleUser = isGoogle || (user.providerData && user.providerData.some(p => p.providerId === 'google.com'));
+
+                // Bypass email verification restriction for Google Auth users (emails are pre-verified)
+                if (!user.emailVerified && !isGoogleUser) {
+                    showCheckYourEmailScreen();
+                    return;
+                }
+
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 
                 if (!userDocSnap.exists()) {
-                    if (isGoogle) {
-                        console.log(`[Auth] Profile missing for Google user. Auto-creating default student profile...`);
-                        await setDoc(userDocRef, {
-                            uid: user.uid,
-                            email: user.email || "",
-                            displayName: user.displayName || "Google User",
-                            photoURL: user.photoURL || "",
-                            userType: 'student',
-                            college: 'Unknown College',
-                            major: 'Undeclared',
-                            createdAt: new Date().toISOString()
-                        });
-                        console.log(`[Auth] Profile created. Redirecting to student dashboard...`);
-                        window.location.href = 'student_dashboard.html';
-                    } else {
-                        console.log(`[Auth] No profile found for Email user. Logging out.`);
-                        await signOut(auth);
-                        errorDiv.textContent = "No user profile exists. Please sign up first.";
-                        errorDiv.classList.remove('hidden');
-                    }
+                    await setDoc(userDocRef, {
+                        uid: user.uid,
+                        email: user.email || "",
+                        displayName: user.displayName || "Student",
+                        photoURL: user.photoURL || "",
+                        userType: 'student',
+                        college: 'Unknown College',
+                        major: 'Undeclared',
+                        bio: '',
+                        certifications: [],
+                        projects: [],
+                        skillsOffered: [],
+                        profileSetupComplete: false,
+                        createdAt: new Date().toISOString()
+                    });
+                    window.location.href = 'edit_profile.html';
+                    return;
+                }
+
+                const userData = userDocSnap.data();
+                if (isGoogleUser && user.photoURL) {
+                    await setDoc(userDocRef, { photoURL: user.photoURL }, { merge: true });
+                }
+                if (isProfileEmpty(userData) && !userData.profileSetupComplete) {
+                    window.location.href = 'edit_profile.html';
                 } else {
-                    console.log(`[Auth] Profile found. Routing to correct dashboard...`);
-                    // Ensure photoURL is synchronized for existing users
-                    if (isGoogle && user.photoURL) {
-                        await setDoc(userDocRef, { photoURL: user.photoURL }, { merge: true });
-                    }
-                    const userData = userDocSnap.data();
                     const dashboard = userData.userType === 'mentor' ? 'mentor_dashboard.html' : 'student_dashboard.html';
                     window.location.href = dashboard;
                 }
             } catch (error) {
                 console.error("[Firestore Error]", error);
-                console.log("[Auth] Fallback: Routing to student dashboard due to Firestore error or missing profile.");
-                window.location.href = 'student_dashboard.html';
+                window.location.href = 'edit_profile.html';
             }
         };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+                if (!user.emailVerified && !isGoogleUser) {
+                    showCheckYourEmailScreen();
+                }
+            }
+        });
+
+        document.getElementById('resend-verification-btn')?.addEventListener('click', async () => {
+            if (auth.currentUser) {
+                try {
+                    await sendEmailVerification(auth.currentUser);
+                    verificationMsg.textContent = "Verification email sent! Check your inbox.";
+                    verificationMsg.classList.remove('hidden');
+                } catch (err) {
+                    verificationMsg.textContent = "Failed to resend: " + (err.message || "Try again later.");
+                    verificationMsg.classList.remove('hidden');
+                }
+            }
+        });
+
+        document.getElementById('check-verification-btn')?.addEventListener('click', async () => {
+            if (auth.currentUser) {
+                await auth.currentUser.reload();
+                if (auth.currentUser.emailVerified) {
+                    handleLoginResult(auth.currentUser);
+                } else {
+                    verificationMsg.textContent = "Email is still not verified. Please click the link in your email.";
+                    verificationMsg.classList.remove('hidden');
+                }
+            }
+        });
+
+        document.getElementById('verification-signout-btn')?.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.reload();
+            });
+        });
 
         document.getElementById('sign-in-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -173,10 +255,8 @@
             const password = document.getElementById('auth-password').value;
 
             try {
-                console.log(`[Auth] Attempting email login for: ${email}`);
                 await setPersistence(auth, browserSessionPersistence);
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                console.log("[Auth] Login successful. Verifying profile...");
                 await handleLoginResult(userCredential.user, false);
             } catch (error) {
                 console.error("[Auth Error]", error);
@@ -201,10 +281,8 @@
             const provider = new GoogleAuthProvider();
             errorDiv.classList.add('hidden');
             try {
-                console.log("[Auth] Attempting Google Sign-In popup...");
                 await setPersistence(auth, browserSessionPersistence);
                 const result = await signInWithPopup(auth, provider);
-                console.log("[Auth] Google Sign-In successful. Verifying profile...");
                 await handleLoginResult(result.user, true);
             } catch (error) {
                 console.error("[Auth Error]", error);

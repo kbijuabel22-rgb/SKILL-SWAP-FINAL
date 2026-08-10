@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+<script src="app-state.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -121,32 +122,26 @@
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md min-h-screen flex flex-col" style="background: transparent;">
-<!-- TopNavBar -->
-<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none">
+<!<!-- TopNavBar -->
+<nav class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md text-primary dark:text-inverse-primary docked full-width top-0 sticky z-50 shadow-[0_4px_20px_rgba(108,99,255,0.08)]">
 <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
-<div class="flex items-center gap-md">
-<!-- Mobile Menu Button -->
-<button class="md:hidden p-2 text-on-surface-variant hover:bg-primary-container/20 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="menu">menu</span>
-</button>
-<div class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</div>
-</div>
-<!-- Web Navigation Cluster -->
-<div class="hidden md:flex items-center gap-lg h-full">
-<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-primary dark:text-inverse-primary font-bold border-b-2 border-primary hover:bg-primary-container/20 transition-all duration-200" href="student_dashboard.html">Dashboard</a>
-<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="match_discovery.html">Matches</a>
-<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="skill_gap_analyzer.html">Skill Gap</a>
-<a class="h-full flex items-center px-4 font-label-caps text-label-caps text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200" href="student_portfolio.html">Portfolio</a>
+<a href="student_dashboard.html" class="flex items-center gap-2">
+<span class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
+</a>
 
-</div>
 <div class="flex items-center gap-sm">
+<!-- 1. Profile Avatar -->
+<a href="edit_profile.html" class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
+<img id="top-nav-avatar" alt="Student avatar" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"/>
+</a>
+
+<!-- 2. Notification Bell Icon -->
 <div class="relative" id="notifications-wrapper">
-<button id="bell-btn" class="relative p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<button id="bell-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
 <span id="notification-badge" class="absolute top-0 right-0 bg-error text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
 </button>
 
-<!-- Dropdown -->
 <div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-surface-container-high border border-outline-variant rounded-xl shadow-lg flex flex-col overflow-hidden opacity-0 pointer-events-none transition-all duration-200 transform scale-95 origin-top-right z-50">
     <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-highest">
         <h3 class="font-title-md text-sm font-bold text-on-surface">Notifications</h3>
@@ -156,29 +151,22 @@
     </div>
 </div>
 </div>
-<button class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
-</button>
-<button class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
-</button>
-<a href="edit_profile.html" class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-sm cursor-pointer hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
-<img id="top-nav-avatar" alt="Student avatar with status" class="w-full h-full object-cover" data-alt="A close-up portrait of a young Indian male college student with short dark hair, wearing a casual light grey hoodie. He is outdoors on a bright campus with blurred greenery in the background, lit softly by natural daylight. His expression is confident and approachable, fitting a modern student social platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA6vz6inntRVTQl2OucxSPdaKYn-okETZSQQHrPkuhu3vbRtGjGtCUhGARaNXKwoyEyGPfk5Snd-Bx3Qno2Wjn9poJb_O1SjzEn2GjI0WBfQCP10LkcJ1Z_BiGOqwEOwzX1HcqUdFeuj3jcbr44ZOj9tlXeAWwoXy810xX6lHX88er8pv75NRX4imUtSvAffLycgbAixqu9jECKUIv27M2ZhN_0W9AB_me0bCgnv_-uh4xc77RiOoeJdATqDcdpISOlfbzDm4Sp6w"/>
-</a>
-<button id="logout-btn" class="p-2 ml-2 text-error hover:bg-error-container transition-all duration-200 rounded-full flex items-center justify-center title='Logout'">
-<span class="material-symbols-outlined" data-icon="logout">logout</span>
+
+<!-- 3. Hamburger Menu Button -->
+<button id="hamburger-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Settings & Preferences">
+<span class="material-symbols-outlined">menu</span>
 </button>
 </div>
 </div>
 </nav>
+
 <div class="flex flex-1 overflow-hidden">
 <!-- SideNavBar -->
 <aside class="bg-surface dark:bg-surface-container-low text-primary dark:text-primary-fixed-dim h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline/20 flat no shadows hidden lg:flex flex-col gap-sm p-md pt-24 z-40">
 <div class="flex items-center gap-md mb-lg px-2">
-<img alt="Campus Logo" class="w-12 h-12 rounded-lg object-cover" data-alt="A stylized logo for a fictional university department. It features a modern geometric crest in deep indigo and bright cyan on a crisp white background. The design is clean, corporate-academic, and highly professional, suggesting an engineering or computer science focus. The lighting is neutral studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrsiv54f6J8jZA8L-X5__3MdKM4sWfi2_Z59wyrF12qf7YAEdqhuLUKJcsAy4UheSIdZFF9iS_tnlCbxzKp-ebpV36wupzjYt8HPbKCYeOCq3bPEhcAFCy0MWiuKB_DDwW3VIDapAowExUEbRB82rqLqJCHvW5F79yrIWXg5X2iObMDtEfFbAReHa9Dryq7FcuMLelAIOoZamF_XrHepSXoZlJNDBq0cj-vXHtOosKYjLQlq9KSs5nTdU9ywUrzMXE5s4kiVP7o5U"/>
 <div>
-<h2 class="font-title-md text-title-md text-primary font-bold">IIT Bombay</h2>
-<p class="font-label-caps text-label-caps text-on-surface-variant">Computer Science Dept.</p>
+<h2 id="side-nav-college" class="font-title-md text-title-md text-primary font-bold"><a href="edit_profile.html" class="hover:underline">Add your college</a></h2>
+<p id="side-nav-dept" class="font-label-caps text-label-caps text-on-surface-variant">—</p>
 </div>
 </div>
 <nav class="flex flex-col gap-xs flex-1">
@@ -198,57 +186,71 @@
 <span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
 <span class="font-label-caps text-label-caps">Portfolio</span>
 </a>
-
 </nav>
-<button onclick="window.location.href='teach_skill.html'" class="mt-auto gradient-primary text-on-primary font-title-md text-title-md py-3 rounded-xl shadow-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2"><span class="material-symbols-outlined">school</span> Teach Skill</button>
 </aside>
+
 <!-- Main Content -->
 <main class="flex-1 lg:ml-64 p-4 md:p-gutter overflow-y-auto max-w-container-max mx-auto w-full">
 <div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
-<!-- Center Feed Area (Spans 8 cols on XL) -->
 <div class="xl:col-span-8 flex flex-col gap-gutter">
 <!-- Hero Section -->
 <section class="glass-card rounded-xl p-md md:p-lg flex flex-col md:flex-row items-center justify-between gap-md relative overflow-hidden">
-<!-- Decorative background element -->
 <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full gradient-primary opacity-10 blur-3xl"></div>
 <div class="z-10 w-full md:w-auto">
 <h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-sm">Welcome back, <span class="text-gradient" id="dashboard-welcome-name">there!</span></h1>
-<p class="text-on-surface-variant font-body-md text-body-md mb-md max-w-md">Your next scheduled swap is tomorrow at 2:00 PM. You're making great progress this semester.</p>
+<p id="dashboard-hero-subtitle" class="text-on-surface-variant font-body-md text-body-md mb-md max-w-md">No upcoming swap sessions scheduled yet. Connect with peers in Matches to get started!</p>
 <div class="flex flex-wrap gap-sm">
-<div class="bg-surface border border-primary/20 rounded-lg p-sm flex items-center gap-sm">
-<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+<div class="bg-surface border border-primary/20 rounded-lg p-sm flex flex-col gap-3 min-w-[220px]">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">bolt</span>
 <div>
 <div class="font-label-caps text-label-caps text-on-surface-variant">Current Level</div>
-<div class="font-badge-text text-badge-text text-primary">120 ⚡ Apprentice</div>
+<div id="dashboard-level-badge" class="font-badge-text text-badge-text text-primary">0% • Novice</div>
 </div>
 </div>
-<div class="bg-surface border border-outline-variant rounded-lg p-sm flex items-center gap-sm">
-<span class="material-symbols-outlined text-tertiary" data-icon="event">event</span>
+<div id="dashboard-level-progress-text" class="text-on-surface-variant text-sm">Loading your level progress...</div>
+<div class="h-2 bg-white/10 rounded-full overflow-hidden">
+<div id="dashboard-level-progress-bar" class="h-full rounded-full bg-primary transition-all" style="width:0%"></div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-sm flex items-center gap-sm min-w-[220px]">
+<span class="material-symbols-outlined text-outline font-normal">event_busy</span>
 <div>
 <div class="font-label-caps text-label-caps text-on-surface-variant">Next Swap</div>
-<div class="font-badge-text text-badge-text text-tertiary">UX Review (Tom, 2pm)</div>
+<div id="dashboard-next-swap-text" class="font-badge-text text-badge-text text-on-surface-variant italic">No swap lined up</div>
 </div>
 </div>
 </div>
 </div>
-<!-- Progress Circle Graphic (Simulated) -->
-<div class="relative w-32 h-32 flex-shrink-0 z-10 flex items-center justify-center">
-<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
-<circle cx="50" cy="50" fill="none" r="45" stroke="#e4e1ee" stroke-width="8"></circle>
-<circle cx="50" cy="50" fill="none" r="45" stroke="url(#gradient)" stroke-dasharray="282.7" stroke-dashoffset="70" stroke-width="8"></circle>
+
+<!-- Profile Completeness Card (Auto-hides at 100%) -->
+<div id="profile-completeness-card" class="bg-surface border border-outline-variant rounded-xl p-md w-full md:w-80 transition-all">
+<div class="flex items-start justify-between mb-4 gap-2">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Profile Completeness</h3>
+<p class="text-on-surface-variant text-xs mt-1">4 conditions: Basic Info, Skills, Portfolio, and Swaps.</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">insights</span>
+</div>
+<div class="relative mx-auto w-36 h-36">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle cx="50" cy="50" r="45" fill="none" stroke="#2c2841" stroke-width="10"></circle>
+<circle id="profile-completion-ring" cx="50" cy="50" r="45" fill="none" stroke="url(#profile-gradient)" stroke-width="10" stroke-linecap="round" stroke-dasharray="282.743" stroke-dashoffset="282.743"></circle>
 <defs>
-<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<linearGradient id="profile-gradient" x1="0%" x2="100%" y1="0%" y2="100%">
 <stop offset="0%" stop-color="#4d41df"></stop>
 <stop offset="100%" stop-color="#69e5ff"></stop>
-</lineargradient>
+</linearGradient>
 </defs>
 </svg>
-<div class="absolute flex flex-col items-center">
-<span class="font-title-md text-title-md text-primary font-bold">75%</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">to Master</span>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+<div id="profile-completion-percentage" class="font-title-md text-title-md text-primary font-bold">0%</div>
+<div id="profile-completion-count" class="text-on-surface-variant text-xs">0 of 4 met</div>
 </div>
 </div>
-</section>
+<p id="profile-completion-helper" class="mt-3 text-on-surface-variant text-xs text-center font-medium">Loading profile status...</p>
+</div>
+</section>ion>
 <!-- Quick Actions Bento -->
 <section>
 <h2 class="font-title-md text-title-md mb-sm text-on-surface">Quick Actions</h2>
@@ -300,7 +302,7 @@
 </div>
 <h2 class="font-title-md text-title-md text-on-surface">Campus Stats</h2>
 </div>
-<p class="font-label-caps text-label-caps text-on-surface-variant mb-md">Top Learners @ TKM College</p>
+<p id="campus-stats-subtitle" class="font-label-caps text-label-caps text-on-surface-variant mb-md">Loading campus activity...</p>
 <div id="campus-stats-container" class="flex flex-col gap-sm">
 <!-- Javascript will inject campus stats here -->
 </div>
@@ -330,10 +332,17 @@
 </div>
 </div>
 </footer>
+<div id="level-up-toast" class="hidden fixed bottom-6 right-6 z-50 glass-card border border-primary/20 bg-surface-container-high p-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm">
+<span class="material-symbols-outlined text-secondary text-3xl">celebration</span>
+<div>
+<p id="level-up-toast-title" class="font-semibold text-on-surface">Level Up!</p>
+<p id="level-up-toast-message" class="text-on-surface-variant text-sm">You unlocked a new tier. Keep swapping skills to stay ahead.</p>
+</div>
+</div>
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { initializeFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeFirestore, doc, getDoc, collection, getDocs, onSnapshot as fsOnSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
@@ -355,6 +364,105 @@
             experimentalForceLongPolling: true
         });
 
+        function getPreferredDisplayName(user, userData = null) {
+            const candidates = [
+                userData?.displayName,
+                userData?.name,
+                user?.displayName,
+                user?.providerData?.[0]?.displayName,
+                user?.email?.split('@')[0]
+            ];
+
+            for (const candidate of candidates) {
+                if (typeof candidate === 'string' && candidate.trim()) {
+                    return candidate.trim();
+                }
+            }
+
+            return 'Student';
+        }
+
+        function getFirstName(user, userData = null) {
+            const name = getPreferredDisplayName(user, userData);
+            return name.split(/\s+/).filter(Boolean)[0] || 'There';
+        }
+
+        function getProfileCompletionData(userData = {}) {
+            const hasBio = Boolean((userData.bio || userData.profileBio || '').toString().trim());
+            const skills = Array.isArray(userData.skillsOffered)
+                ? userData.skillsOffered.filter(Boolean)
+                : Array.isArray(userData.skillsToTeach)
+                    ? userData.skillsToTeach.filter(Boolean)
+                    : [];
+            const hasSkills = skills.length > 0;
+            const hasCerts = Array.isArray(userData.certifications) && userData.certifications.filter(Boolean).length > 0;
+            const hasProjects = Array.isArray(userData.projects) && userData.projects.filter(Boolean).length > 0;
+            const completedAreas = [hasBio, hasSkills, hasCerts, hasProjects].filter(Boolean).length;
+            return {
+                completedAreas,
+                totalAreas: 4,
+                percent: Math.round((completedAreas / 4) * 100),
+                hasBio,
+                hasSkills,
+                hasCerts,
+                hasProjects
+            };
+        }
+
+        function renderProfileCompletion(userData) {
+            const profile = window.SkillSwapState.calculateProfileCompleteness(userData);
+            const card = document.getElementById('profile-completeness-card');
+            const ring = document.getElementById('profile-completion-ring');
+            const percentage = document.getElementById('profile-completion-percentage');
+            const count = document.getElementById('profile-completion-count');
+            const helper = document.getElementById('profile-completion-helper');
+            const circumference = 282.743;
+
+            if (profile.isComplete) {
+                if (card) card.classList.add('hidden');
+                return;
+            } else {
+                if (card) card.classList.remove('hidden');
+            }
+
+            if (ring) {
+                ring.style.strokeDashoffset = circumference * (1 - profile.percent / 100);
+            }
+            if (percentage) {
+                percentage.textContent = `${profile.percent}%`;
+            }
+            if (count) {
+                count.textContent = `${profile.metCount} of 4 met`;
+            }
+            if (helper) {
+                helper.textContent = profile.nextActionHint;
+            }
+        }
+
+        function updateLevelDisplay(userData) {
+            const readinessScore = userData.readinessScore || 0;
+            const levelInfo = window.SkillSwapState.calculateReadinessLevel(readinessScore);
+
+            const badge = document.getElementById('dashboard-level-badge');
+            const progressText = document.getElementById('dashboard-level-progress-text');
+            const progressBar = document.getElementById('dashboard-level-progress-bar');
+
+            if (badge) badge.textContent = `${levelInfo.score}% • ${levelInfo.tierName}`;
+            if (progressBar) progressBar.style.width = `${levelInfo.progressPercent}%`;
+            if (progressText) {
+                progressText.textContent = `${levelInfo.score}% Readiness Score • ${levelInfo.tierName} Tier`;
+            }
+            return levelInfo.tierName;
+        }
+
+        function openChat(targetUserId) {
+            if (!targetUserId) return;
+            sessionStorage.setItem('pendingChatTargetUserId', targetUserId);
+            window.location.href = `chat.html?targetUserId=${encodeURIComponent(targetUserId)}`;
+        }
+
+        window.openChat = openChat;
+
         // Protect route and load data
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -362,41 +470,75 @@
                 window.location.href = 'index.html';
                 return;
             }
+
+            const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+            if (!user.emailVerified && !isGoogleUser) {
+                console.log("[Auth] User email not verified, redirecting to sign in.");
+                window.location.href = 'sign_in.html?unverified=true';
+                return;
+            }
             console.log(`[Dashboard] User authenticated: ${user.uid}`);
-            
+
             // Set initial values from auth object
-            const displayName = user.displayName || 'Aarav Patel';
-            const firstName = displayName.split(' ')[0];
+            const firstName = getFirstName(user);
+            let currentUserCollege = '';
+            const previousTier = localStorage.getItem('dashboard-last-tier');
             document.title = `${firstName}'s Dashboard - SkillSwap`;
             document.getElementById('dashboard-welcome-name').textContent = firstName + "!";
-            
-            const campusStatsName = document.getElementById('campus-stats-user-name');
-            if (campusStatsName) campusStatsName.textContent = `You (${firstName})`;
 
             const topNavAvatar = document.getElementById('top-nav-avatar');
             if (topNavAvatar && user.photoURL) topNavAvatar.src = user.photoURL;
 
-            const campusStatsAvatar = document.getElementById('campus-stats-user-avatar');
-            if (campusStatsAvatar && user.photoURL) campusStatsAvatar.src = user.photoURL;
-            
-            try {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    if (userData.name) {
-                        const name = userData.name;
-                        const dbFirstName = name.split(' ')[0];
-                        document.title = `${dbFirstName}'s Dashboard - SkillSwap`;
-                        document.getElementById('dashboard-welcome-name').textContent = dbFirstName + "!";
-                        if (campusStatsName) campusStatsName.textContent = `You (${dbFirstName})`;
-                    }
-                    if (userData.photoURL) {
-                        if (topNavAvatar) topNavAvatar.src = userData.photoURL;
-                        if (campusStatsAvatar) campusStatsAvatar.src = userData.photoURL;
-                    }
+            function applyProfileToUI(userData) {
+                const profileName = getPreferredDisplayName(user, userData);
+                const dbFirstName = getFirstName(user, userData);
+                document.title = `${dbFirstName}'s Dashboard - SkillSwap`;
+                document.getElementById('dashboard-welcome-name').textContent = dbFirstName + "!";
+
+                // Sidebar college/dept
+                const sideCollege = document.getElementById('side-nav-college');
+                const sideDept = document.getElementById('side-nav-dept');
+                if (sideCollege) {
+                    const college = (userData.college || '').toString().trim();
+                    sideCollege.innerHTML = college
+                        ? `<span>${college}</span>`
+                        : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
+                }
+                if (sideDept) {
+                    sideDept.textContent = (userData.major || userData.department || '').toString().trim() || '—';
+                }
+
+                if (userData.photoURL) {
+                    if (topNavAvatar) topNavAvatar.src = userData.photoURL;
+                }
+
+                currentUserCollege = (userData.college || '').toString().trim();
+                const campusSubtitle = document.getElementById('campus-stats-subtitle');
+                if (campusSubtitle) {
+                    campusSubtitle.textContent = currentUserCollege
+                        ? `Top campus activity @ ${currentUserCollege}`
+                        : 'Campus stats will show once you add your college.';
+                }
+
+                renderProfileCompletion(userData);
+                updateLevelDisplay(userData, previousTier);
+            }
+
+            // Real-time profile listener — updates sidebar/dashboard immediately on edit
+            const { onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+            const userDocRef = doc(db, 'users', user.uid);
+            onSnapshot(userDocRef, (snap) => {
+                if (snap.exists()) {
+                    applyProfileToUI(snap.data());
                 } else {
                     console.log("[Dashboard] User document missing. Continuing with default profile view.");
                 }
+            }, (error) => {
+                console.error("[Dashboard] Error subscribing to user profile:", error);
+            });
+
+            try {
+                // Initial onSnapshot fires immediately — nothing extra needed
             } catch (error) {
                 console.error("[Dashboard] Error fetching user profile:", error);
                 console.log("Skipping profile requirement due to Firestore error.");
@@ -423,7 +565,7 @@
                                 const partnerId = ids[0] === user.uid ? ids[1] : ids[0];
                                 
                                 dropdownHTML += `
-                                    <div class="p-3 rounded-lg bg-surface-container-highest hover:bg-surface-container-lowest cursor-pointer transition-colors border border-outline-variant flex items-center justify-between" onclick="window.location.href='chat.html?targetUserId=${partnerId}'">
+                                    <div class="p-3 rounded-lg bg-surface-container-highest hover:bg-surface-container-lowest cursor-pointer transition-colors border border-outline-variant flex items-center justify-between" onclick="openChat('${partnerId}')">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full gradient-primary text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                                                 <span class="material-symbols-outlined text-[16px]">chat</span>
@@ -476,108 +618,180 @@
                 });
             }
 
-            // Fetch live data for Swaps, Stats, and Trending Skills
-            try {
-                const usersSnap = await getDocs(collection(db, 'users'));
-                const swapsContainer = document.getElementById('current-swaps-container');
-                const statsContainer = document.getElementById('campus-stats-container');
-                const trendingContainer = document.getElementById('trending-skills-container');
-                
-                let allSkills = {};
-                let userStats = [];
-                let swapsHTML = '';
-                
-                usersSnap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (docSnap.id === user.uid) return; // skip self
-                    
-                    const name = data.displayName || data.name || 'Student';
-                    const college = data.college || 'College';
-                    const teach = data.skillsToTeach || [];
-                    const learn = data.skillsToLearn || [];
-                    
-                    // Aggregate skills
-                    teach.forEach(s => {
-                        allSkills[s] = (allSkills[s] || 0) + 1;
-                    });
-                    learn.forEach(s => {
-                        allSkills[s] = (allSkills[s] || 0) + 1;
-                    });
-                    
-                    // Calculate "points" for leaderboard mock based on skills count
-                    const points = (teach.length * 50) + (learn.length * 20) + Math.floor(Math.random() * 100);
-                    userStats.push({ name, points });
+            // Real-time listener for campus stats, active swaps, and trending skills
+            const swapsContainer = document.getElementById('current-swaps-container');
+            const statsContainer = document.getElementById('campus-stats-container');
+            const trendingContainer = document.getElementById('trending-skills-container');
 
-                    // Generate a random swap card if they have skills
-                    if (teach.length > 0 && Math.random() > 0.5 && swapsHTML.length < 2000) {
-                        const skill = teach[0];
-                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
-                        const avatarHTML = data.photoURL ? 
-                            `<img src="${data.photoURL}" alt="${name}" class="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-sm" />` : 
-                            `<div class="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold shadow-sm">${initials}</div>`;
-                            
-                        swapsHTML += `
-<div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
-<div class="flex flex-col md:flex-row justify-between gap-md">
-<div class="flex items-start gap-md">
-${avatarHTML}
-<div>
-<div class="flex items-center gap-xs mb-xs">
-<h3 class="font-title-md text-title-md text-on-surface text-base">${name}</h3>
-<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px]">${college}</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm">Teaching ${skill}</p>
-</div>
-</div>
-<div class="flex flex-row md:flex-col justify-end gap-sm md:gap-xs mt-sm md:mt-0">
-<button onclick="window.location.href='chat.html?targetUserId=${docSnap.id}'" class="bg-surface text-primary border border-primary px-4 py-2 rounded-lg font-badge-text text-badge-text hover:bg-primary-container/10 transition-colors flex items-center justify-center gap-2">
-    <span class="material-symbols-outlined text-sm">chat</span> Chat
-</button>
-</div>
-</div>
+            if (statsContainer) {
+                statsContainer.innerHTML = '<div class="text-on-surface-variant">Loading campus stats…</div>';
+            }
+
+            fsOnSnapshot(collection(db, 'users'), (usersSnap) => {
+                const firestoreUsers = usersSnap.docs.map(d => d.data() || {});
+                const leaderboard = window.SkillSwapState.getCampusLeaderboard(currentUserCollege, firestoreUsers);
+
+                const campusSubtitle = document.getElementById('campus-stats-subtitle');
+                if (campusSubtitle) {
+                    campusSubtitle.textContent = leaderboard.hasCollege && leaderboard.collegeName
+                        ? `Top 3 Learners @ ${leaderboard.collegeName}`
+                        : 'Add your college in Edit Profile to join your campus leaderboard!';
+                }
+
+                if (statsContainer) {
+                    if (!leaderboard.hasCollege || leaderboard.topUsers.length === 0) {
+                        statsContainer.innerHTML = `
+                            <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/40 p-4 text-center">
+                                <span class="material-symbols-outlined text-2xl text-primary block mb-1">school</span>
+                                <p class="text-xs text-on-surface-variant font-semibold mb-1">No campus peers found</p>
+                                <p class="text-[11px] text-on-surface-variant/70 mb-2">Add your college to unlock your campus leaderboard.</p>
+                                <a href="edit_profile.html?section=basic" class="text-xs text-primary font-bold hover:underline">+ Add College</a>
+                            </div>`;
+                    } else {
+                        const rankBadges = [
+                            { bg: 'bg-amber-500/20 text-amber-300 border-amber-500/30', rank: '#1' },
+                            { bg: 'bg-slate-300/20 text-slate-300 border-slate-400/30', rank: '#2' },
+                            { bg: 'bg-amber-700/20 text-amber-400 border-amber-600/30', rank: '#3' }
+                        ];
+
+                        statsContainer.innerHTML = leaderboard.topUsers.map((u, i) => `
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/30">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 rounded-full ${rankBadges[i]?.bg || 'bg-primary/20 text-primary'} flex items-center justify-center text-xs font-bold border">
+                                        ${rankBadges[i]?.rank || `#${i+1}`}
+                                    </span>
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+                                        <img src="${u.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" class="w-full h-full object-cover" alt="${u.name}"/>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-xs text-on-surface truncate max-w-[110px]">${u.name}</p>
+                                        <p class="text-[10px] text-on-surface-variant">${u.teachCount} offered • ${u.learnCount} wanted</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold text-primary">${u.score}% Readiness</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                // ── Active Swaps: Filter ONLY for swaps the logged-in user is part of ──
+                const userDocSnap = usersSnap.docs.find(d => d.id === user.uid);
+                const userData = userDocSnap ? userDocSnap.data() : {};
+                const mySwaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
+
+                if (swapsContainer) {
+                    if (mySwaps.length === 0) {
+                        swapsContainer.innerHTML = `
+                            <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-6 text-center">
+                                <span class="material-symbols-outlined text-3xl text-primary block mb-2">swap_horiz</span>
+                                <p class="text-sm font-semibold text-on-surface mb-1">No active swaps yet</p>
+                                <p class="text-xs text-on-surface-variant mb-4">Connect with peers in Matches to start swapping skills!</p>
+                                <a href="match_discovery.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white font-badge-text text-badge-text shadow-sm hover:shadow-md transition-all">
+                                    <span class="material-symbols-outlined text-sm">search</span>
+                                    Browse Matches
+                                </a>
+                            </div>`;
+                    } else {
+                        swapsContainer.innerHTML = mySwaps.map((swap) => {
+                            const partner = swap.with || swap.peerName || swap.partner || 'Peer';
+                            const title = swap.title || swap.activity || 'Swap Session';
+                            const status = swap.status || 'Active';
+                            const isCompleted = status.toLowerCase().includes('complet');
+
+                            return `
+                                <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 ${isCompleted ? 'bg-tertiary' : 'bg-primary'}"></div>
+                                    <div class="flex flex-col md:flex-row justify-between gap-md">
+                                        <div class="flex items-start gap-md">
+                                            <div class="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-lg">
+                                                ${partner.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-xs mb-xs">
+                                                    <h3 class="font-title-md text-title-md text-on-surface text-base">${title}</h3>
+                                                    <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px]">${status}</span>
+                                                </div>
+                                                <p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm">With ${partner}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }).join('');
+                    }
+                }
+
+                // ── Trending Skills ──
+                if (trendingContainer) {
+                    const sortedSkills = Object.entries(allSkills).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                    const colors = ['#0077B6', '#FB5607', '#9D4EDD', '#008645', '#4f44e2'];
+                    trendingContainer.innerHTML = sortedSkills.length > 0
+                        ? sortedSkills.map(([skill], i) => {
+                            const c = colors[i % colors.length];
+                            return `<span style="background:${c}1a;color:${c};border-color:${c}33" class="px-3 py-1.5 rounded-full font-label-caps text-label-caps border cursor-pointer transition-colors">${skill}</span>`;
+                        }).join('')
+                        : '<span class="text-on-surface-variant text-sm">Add skills to see trends!</span>';
+                }
+
+                // ── Campus Stats ──
+                if (statsContainer) {
+                    if (!collegeSlug) {
+                        statsContainer.innerHTML = `
+<div class="rounded-xl border border-outline-variant p-md bg-surface-container-low text-on-surface-variant">
+    <p class="font-semibold text-on-surface">Add your college to see campus stats</p>
+    <p class="mt-2 text-sm"><a href="edit_profile.html" class="text-primary underline">Edit Profile</a> and set your college to view campus activity here.</p>
+</div>`;
+                    } else if (totalUsersOnCollege < 2) {
+                        statsContainer.innerHTML = `
+<div class="rounded-xl border border-outline-variant p-md bg-surface-container-low text-on-surface-variant">
+    <p class="font-semibold text-on-surface">Be one of the first at ${currentUserCollege} to start swapping skills!</p>
+    <p class="mt-2 text-sm">Invite classmates to join SkillSwap so campus activity can appear here.</p>
+</div>`;
+                    } else {
+                        const sortedCampusSkills = Object.entries(campusSkillCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+                        const topContributors = [...campusContributors].sort((a, b) => b.contribution - a.contribution).slice(0, 3);
+                        statsContainer.innerHTML = `
+<div class="grid grid-cols-1 gap-sm">
+    <div class="bg-surface border border-outline-variant rounded-xl p-sm">
+        <div class="flex items-center justify-between gap-2">
+            <div>
+                <p class="font-label-caps text-label-caps text-on-surface-variant">Campus students</p>
+                <p class="text-on-surface font-semibold text-sm">${totalUsersOnCollege} student${totalUsersOnCollege !== 1 ? 's' : ''} at ${currentUserCollege}</p>
+            </div>
+            <span class="font-badge-text text-badge-text text-primary">${campusActiveCount} active</span>
+        </div>
+    </div>
+    <div class="bg-surface border border-outline-variant rounded-xl p-sm">
+        <p class="font-label-caps text-label-caps text-on-surface-variant mb-3">Top campus skills</p>
+        <div class="flex flex-wrap gap-2">${sortedCampusSkills.length > 0
+            ? sortedCampusSkills.map(([skill]) => `<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[12px] font-semibold">${skill}</span>`).join('')
+            : '<span class="text-on-surface-variant text-sm">No campus skills listed yet.</span>'}
+        </div>
+    </div>
+    <div class="bg-surface border border-outline-variant rounded-xl p-sm">
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <p class="font-label-caps text-label-caps text-on-surface-variant">Campus leaderboard</p>
+            <span class="font-badge-text text-badge-text text-primary">${topContributors.length} shown</span>
+        </div>
+        ${topContributors.length > 0
+            ? topContributors.map((person, i) => `
+            <div class="flex items-center justify-between gap-3 py-2 ${i > 0 ? 'border-t border-outline-variant' : ''}">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-xs font-bold">${person.name.charAt(0)}</div>
+                    <div>
+                        <div class="text-on-surface font-semibold">${person.name}</div>
+                        <div class="text-on-surface-variant text-xs">${person.teachCount} teach · ${person.learnCount} learn</div>
+                    </div>
+                </div>
+                <div class="font-badge-text text-badge-text text-primary">${person.contribution} XP</div>
+            </div>`).join('')
+            : '<p class="text-on-surface-variant text-sm">No campus contributors yet.</p>'}
+    </div>
 </div>`;
                     }
-                });
-                
-                if (swapsContainer && swapsHTML) {
-                    swapsContainer.innerHTML = swapsHTML;
-                } else if (swapsContainer) {
-                    swapsContainer.innerHTML = '<p class="text-on-surface-variant">No active swaps right now. Go to Matches to find peers!</p>';
                 }
-                
-                // Populate Trending Skills
-                if (trendingContainer) {
-                    const sortedSkills = Object.entries(allSkills).sort((a,b) => b[1] - a[1]).slice(0, 5);
-                    const colors = ['#0077B6', '#FB5607', '#9D4EDD', '#008645', '#4f44e2'];
-                    if (sortedSkills.length > 0) {
-                        trendingContainer.innerHTML = sortedSkills.map((s, i) => {
-                            const c = colors[i % colors.length];
-                            return `<span style="background:${c}1a; color:${c}; border-color:${c}33" class="px-3 py-1.5 rounded-full font-label-caps text-label-caps border cursor-pointer transition-colors">${s[0]}</span>`;
-                        }).join('');
-                    } else {
-                        trendingContainer.innerHTML = '<span class="text-on-surface-variant text-sm">Add skills to see trends!</span>';
-                    }
-                }
-                
-                // Populate Campus Stats
-                if (statsContainer) {
-                    userStats.sort((a,b) => b.points - a.points);
-                    statsContainer.innerHTML = userStats.slice(0,3).map((u, i) => `
-<div class="flex items-center justify-between p-sm rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer">
-<div class="flex items-center gap-sm">
-<div class="font-badge-text text-badge-text text-on-surface-variant w-4 text-center">${i+1}</div>
-<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${u.name.charAt(0)}</div>
-<span class="font-body-md text-body-md text-on-surface text-sm font-semibold">${u.name}</span>
-</div>
-<span class="font-badge-text text-badge-text text-primary group-hover:scale-110 transition-transform">${u.points} ⚡</span>
-</div>
-                    `).join('');
-                }
-
-            } catch (err) {
-                console.error("Error fetching dashboard live data:", err);
-            }
+            }, (err) => {
+                console.error('[Dashboard] Live data listener error:', err);
+            });
         });
 
         // Logout

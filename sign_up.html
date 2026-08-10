@@ -5,7 +5,6 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Sign Up - SkillSwap</title>
     <script>
-        // Redirect 127.0.0.1 to localhost for Firebase Auth OAuth compliance
         if (window.location.hostname === '127.0.0.1') {
             window.location.hostname = 'localhost';
         }
@@ -83,7 +82,41 @@
             </button>
         </form>
 
-        <div class="text-center mt-2">
+        <!-- Native Firebase Email Verification Screen -->
+        <div id="verification-screen" class="hidden flex flex-col gap-5">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-2">
+                    <span class="material-symbols-outlined text-2xl">mark_email_unread</span>
+                </div>
+                <h3 class="text-2xl font-extrabold text-primary">Verify Your Email</h3>
+                <p class="text-[#c7c4d8] text-xs font-medium px-2">
+                    Verification email sent to <span id="verification-email-target" class="text-[#f3effc] font-bold"></span>. Please check your inbox and click the verification link.
+                </p>
+            </div>
+
+            <div id="verification-error" class="hidden text-error bg-error-container p-3 rounded-lg text-xs font-medium"></div>
+            <div id="verification-info-msg" class="hidden text-secondary bg-surface-variant p-3 rounded-lg text-xs font-medium border border-secondary/30"></div>
+
+            <div class="flex flex-col gap-3">
+                <button type="button" id="check-verified-btn" class="w-full bg-primary hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm">
+                    <span>I Have Verified My Email</span>
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                </button>
+
+                <div class="flex justify-between items-center text-xs pt-1">
+                    <button type="button" id="resend-verification-btn" class="text-primary hover:underline font-bold focus:outline-none flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">refresh</span>
+                        Resend Email
+                    </button>
+                    <button type="button" id="back-to-signup-btn" class="text-[#c7c4d8] hover:text-[#f3effc] transition-colors font-medium focus:outline-none flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">arrow_back</span>
+                        Edit Details
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-2" id="signin-link-wrapper">
             <a href="sign_in.html" class="text-primary hover:underline text-sm font-medium block">
                 Already have an account? Sign In.
             </a>
@@ -92,7 +125,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { initializeFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -106,13 +139,15 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = initializeFirestore(app, { experimentalForceLongPolling: true });
         
-        // Force long-polling to bypass strict network firewalls causing offline hangs
-        const db = initializeFirestore(app, {
-            experimentalForceLongPolling: true
-        });
-
+        const signUpForm = document.getElementById('sign-up-form');
+        const verificationScreen = document.getElementById('verification-screen');
         const errorDiv = document.getElementById('auth-error');
+        const verificationErrorDiv = document.getElementById('verification-error');
+        const verificationInfoDiv = document.getElementById('verification-info-msg');
+
+        let pendingUserData = null;
 
         const getFriendlyErrorMessage = (error) => {
             const code = error.code || "";
@@ -123,49 +158,132 @@
             return error.message || "An unknown error occurred.";
         };
 
-        document.getElementById('sign-up-form').addEventListener('submit', async (e) => {
+        signUpForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorDiv.classList.add('hidden');
+
             const submitBtn = document.getElementById('auth-submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Saving...</span>';
+            submitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Creating Account...';
 
-            const email = document.getElementById('auth-email').value;
+            const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
-            const name = document.getElementById('profile-name').value;
-            const role = 'student';
-            const college = document.getElementById('profile-college').value;
-            const major = document.getElementById('profile-major').value;
+            const name = document.getElementById('profile-name').value.trim();
+            const college = document.getElementById('profile-college').value.trim();
+            const major = document.getElementById('profile-major').value.trim();
+
+            if (!email || !password || !name || !college || !major) {
+                errorDiv.textContent = "Please fill in all required fields.";
+                errorDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Sign Up</span><span class="material-symbols-outlined text-[18px]">person_add</span>';
+                return;
+            }
 
             try {
-                console.log(`[Auth] Attempting signup for email: ${email}`);
-                // 1. Create User in Firebase Auth
                 await setPersistence(auth, browserSessionPersistence);
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                console.log(`[Auth] Signup successful. UID: ${user.uid}. Creating Firestore profile...`);
 
-                // 2. Save profile in Firestore
-                await setDoc(doc(db, "users", user.uid), {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: name,
-                    userType: role,
-                    college: college,
-                    major: major,
-                    createdAt: new Date().toISOString()
-                });
+                // Call sendEmailVerification immediately upon creation
+                await sendEmailVerification(user);
 
-                // 3. Redirect to dashboard
-                console.log(`[Auth] Profile saved. Redirecting to dashboard...`);
-                window.location.href = 'student_dashboard.html';
+                pendingUserData = { email, name, college, major, role: 'student' };
+                document.getElementById('verification-email-target').textContent = email;
 
+                signUpForm.classList.add('hidden');
+                verificationScreen.classList.remove('hidden');
             } catch (error) {
-                console.error("[Signup Error]", error);
+                console.error("[Sign Up Error]", error);
                 errorDiv.textContent = getFriendlyErrorMessage(error);
                 errorDiv.classList.remove('hidden');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<span>Sign Up</span><span class="material-symbols-outlined text-[18px]">person_add</span>';
+            }
+        });
+
+        document.getElementById('back-to-signup-btn').addEventListener('click', () => {
+            verificationScreen.classList.add('hidden');
+            signUpForm.classList.remove('hidden');
+            verificationErrorDiv.classList.add('hidden');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>Sign Up</span><span class="material-symbols-outlined text-[18px]">person_add</span>';
+        });
+
+        document.getElementById('resend-verification-btn').addEventListener('click', async () => {
+            verificationErrorDiv.classList.add('hidden');
+            verificationInfoDiv.classList.add('hidden');
+            try {
+                if (auth.currentUser) {
+                    await sendEmailVerification(auth.currentUser);
+                    verificationInfoDiv.textContent = "Verification email resent! Please check your inbox.";
+                    verificationInfoDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                verificationErrorDiv.textContent = "Failed to resend: " + (err.message || "Try again later.");
+                verificationErrorDiv.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('check-verified-btn').addEventListener('click', async () => {
+            verificationErrorDiv.classList.add('hidden');
+            verificationInfoDiv.classList.add('hidden');
+
+            const checkBtn = document.getElementById('check-verified-btn');
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Checking Status...';
+
+            try {
+                if (auth.currentUser) {
+                    await auth.currentUser.reload();
+                    
+                    if (auth.currentUser.emailVerified) {
+                        const user = auth.currentUser;
+                        const dataToSave = pendingUserData || {
+                            email: user.email,
+                            name: document.getElementById('profile-name').value.trim() || 'Student',
+                            college: document.getElementById('profile-college').value.trim() || 'University',
+                            major: document.getElementById('profile-major').value.trim() || 'Undeclared',
+                            role: 'student'
+                        };
+
+                        await setDoc(doc(db, "users", user.uid), {
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: dataToSave.name,
+                            userType: dataToSave.role,
+                            college: dataToSave.college,
+                            major: dataToSave.major,
+                            bio: '',
+                            certifications: [],
+                            projects: [],
+                            skillsOffered: [],
+                            skillsToTeach: [],
+                            skillsToLearn: [],
+                            skillsWanted: [],
+                            swaps: [],
+                            credits: 0,
+                            profileSetupComplete: false,
+                            createdAt: new Date().toISOString()
+                        });
+
+                        window.location.href = 'student_dashboard.html';
+                    } else {
+                        verificationErrorDiv.textContent = "Your email is not verified yet. Please check your inbox and click the verification link.";
+                        verificationErrorDiv.classList.remove('hidden');
+                    }
+                } else {
+                    verificationErrorDiv.textContent = "Session expired. Please try signing in.";
+                    verificationErrorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("[Verification Reload Error]", err);
+                verificationErrorDiv.textContent = "Error checking verification status: " + (err.message || "Please try again.");
+                verificationErrorDiv.classList.remove('hidden');
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.innerHTML = '<span>I Have Verified My Email</span><span class="material-symbols-outlined text-[18px]">check_circle</span>';
             }
         });
     </script>

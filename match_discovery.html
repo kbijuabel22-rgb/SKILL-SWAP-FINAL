@@ -16,6 +16,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
         rel="stylesheet" />
+    <script src="app-state.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
@@ -148,39 +149,39 @@
 
 <body class="bg-background text-on-background min-h-screen flex flex-col font-body-md" style="background: transparent;">
     <!-- TopNavBar -->
-    <header
-        class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md docked full-width top-0 sticky z-50 bg-surface-container-low dark:bg-surface-container shadow-[0_4px_20px_rgba(108,99,255,0.08)] shadow-sm dark:shadow-none hidden md:block">
+    <header class="bg-surface/80 dark:bg-surface-container-high/80 backdrop-blur-md docked full-width top-0 sticky z-50 shadow-[0_4px_20px_rgba(108,99,255,0.08)]">
         <div class="flex justify-between items-center w-full px-gutter h-16 max-w-container-max mx-auto">
-            <div class="flex items-center gap-md">
-                <span
-                    class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
-                <div class="relative hidden lg:block">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                    <input
-                        class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary text-body-md font-body-md text-on-surface w-64"
-                        placeholder="Search skills, users..." type="text" />
-                </div>
-            </div>
+            <a href="student_dashboard.html" class="flex items-center gap-2">
+                <span class="font-title-md text-title-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">SkillSwap</span>
+            </a>
+
             <div class="flex items-center gap-sm">
-                <button
-                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <button
-                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-                    <span class="material-symbols-outlined">workspace_premium</span>
-                </button>
-                <button
-                    class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 dark:hover:bg-secondary-container/10 transition-all duration-200 rounded-full">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
-                </button>
-                <a href="edit_profile.html" class="cursor-pointer hover:ring-2 hover:ring-primary transition-all rounded-full block ml-sm" title="Edit Profile">
-                    <img id="top-nav-avatar" alt="Student avatar with status"
-                        class="w-8 h-8 rounded-full object-cover border-2 border-primary"
-                        data-alt="A small circular avatar of a college student smiling warmly. High quality, professional headshot in a campus setting. Modern lighting, clean background. Corporate yet youthful vibe."
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV0gZ52ZN2yeM--8nKWCP-u73J0X5Gi84RX-V7wwCyqiBacamxPLQfN3zkT5UySjRj1bNbjdHybXS63QunfgICyhs3Xo1HbJ6jqSpN-9KH2acrt_MYOZSUcOCZK36GSNgf67ReQ_lZdAM3zlgGlpZrOErT5dGGE-cYQkWT_RCzOyW-8poowJk-oFC_ICswRPS78v4WJB86YkU-XTd53q8gMDg8bxI2d0I1NV0nDGhSEENa4_ijfu35WN4wnv3a8-hCHLXfRq6OJL4" />
+                <!-- 1. Profile Avatar -->
+                <a href="edit_profile.html" class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant hover:ring-2 hover:ring-primary transition-all block" title="Edit Profile">
+                    <img id="top-nav-avatar" alt="Student avatar" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"/>
                 </a>
+
+                <!-- 2. Notification Bell Icon -->
+                <div class="relative" id="notifications-wrapper">
+                    <button id="bell-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Notifications">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span id="notification-badge" class="absolute top-0 right-0 bg-error text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+
+                    <div id="notifications-dropdown" class="absolute top-12 right-0 w-80 bg-surface-container-high border border-outline-variant rounded-xl shadow-lg flex flex-col overflow-hidden opacity-0 pointer-events-none transition-all duration-200 transform scale-95 origin-top-right z-50">
+                        <div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-highest">
+                            <h3 class="font-title-md text-sm font-bold text-on-surface">Notifications</h3>
+                        </div>
+                        <div id="notifications-list" class="max-h-64 overflow-y-auto p-2 flex flex-col gap-1 hide-scrollbar">
+                            <div class="p-4 text-center text-sm text-on-surface-variant opacity-70">No new notifications</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Hamburger Menu Button -->
+                <button id="hamburger-btn" class="p-2 text-on-surface-variant dark:text-outline hover:bg-primary-container/20 transition-all duration-200 rounded-full flex items-center justify-center" title="Settings & Preferences">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
             </div>
         </div>
     </header>
@@ -202,8 +203,8 @@
                     class="w-16 h-16 rounded-lg bg-surface-container-high flex items-center justify-center mb-sm shadow-sm">
                     <span class="material-symbols-outlined text-primary text-3xl">school</span>
                 </div>
-                <h2 class="font-title-md text-title-md text-on-surface font-bold">IIT Bombay</h2>
-                <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Computer Science Dept.</p>
+                <h2 id="side-nav-college" class="font-title-md text-title-md text-on-surface font-bold"><a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a></h2>
+                <p id="side-nav-dept" class="font-label-caps text-label-caps text-on-surface-variant mt-1">&mdash;</p>
             </div>
             <nav class="flex-grow flex flex-col gap-xs">
                 <a class="flex items-center gap-md px-sm py-sm rounded-xl text-[#c7c4d8] hover:text-primary hover:bg-surface-container-high transition-colors font-label-caps text-label-caps hover:shadow-md transition-all group"
@@ -229,13 +230,6 @@
                 </a>
 
             </nav>
-            <div class="mt-auto pt-lg">
-                <button onclick="window.location.href='teach_skill.html'"
-                    class="w-full gradient-primary text-on-primary py-3 rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">school</span>
-                    Teach Skill
-                </button>
-            </div>
         </aside>
         <!-- Main Content Area -->
         <main class="flex-1 w-full lg:ml-64 px-4 md:px-gutter py-lg pb-32 md:pb-lg flex flex-col gap-lg">
@@ -248,9 +242,9 @@
                     what you want to learn.</p>
             </div>
             <!-- Filter Bar -->
-            <div class="glass-panel p-4 rounded-xl flex flex-col md:flex-row gap-4 items-end shadow-sm">
-                <div class="flex-1 w-full relative">
-                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Skill</label>
+            <div class="glass-panel p-4 rounded-xl shadow-sm">
+                <div class="w-full relative">
+                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1" for="skill-search">Skill</label>
                     <div class="relative">
                         <span
                             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
@@ -259,29 +253,6 @@
                             class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-body-md font-body-md"
                             placeholder="e.g. Python, Figma..." type="text" />
                     </div>
-                </div>
-                <div class="w-full md:w-auto min-w-[150px]">
-                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Course
-                        Code</label>
-                    <input
-                        class="w-full px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-body-md font-body-md uppercase"
-                        placeholder="e.g. CS201" type="text" />
-                </div>
-                <div class="w-full md:w-auto min-w-[180px]">
-                    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Department</label>
-                    <select
-                        class="w-full px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-body-md font-body-md appearance-none">
-                        <option>Any Department</option>
-                        <option>Computer Science</option>
-                        <option>Design</option>
-                        <option>Business</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-2 pb-2 pl-2">
-                    <input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary"
-                        id="same-college" type="checkbox" />
-                    <label class="font-badge-text text-badge-text text-on-surface whitespace-nowrap cursor-pointer"
-                        for="same-college">Same College Only</label>
                 </div>
             </div>
             <!-- Results Grid -->
@@ -418,11 +389,48 @@
 
         window.__currentUserUid = null;
 
+        function normalizeSkills(skills) {
+            return Array.from(new Set((skills || []).map((skill) => String(skill || '').trim().toLowerCase()).filter(Boolean)));
+        }
+
+        function calculateMutualMatchScore(myOffered, myWanted, theirOffered, theirWanted) {
+            const offered = normalizeSkills(myOffered);
+            const wanted = normalizeSkills(myWanted);
+            const theirOff = normalizeSkills(theirOffered);
+            const theirWant = normalizeSkills(theirWanted);
+
+            if (!offered.length && !wanted.length) return null;
+            if (!theirOff.length && !theirWant.length) return null;
+
+            const countMatches = (source, target) => source.reduce((count, skill) => count + (target.includes(skill) ? 1 : 0), 0);
+            const teachMatch = theirWant.length ? countMatches(offered, theirWant) / theirWant.length : 0;
+            const learnMatch = theirOff.length ? countMatches(wanted, theirOff) / theirOff.length : 0;
+            const score = Math.round(((teachMatch + learnMatch) / 2) * 100);
+            return Math.max(0, Math.min(100, score));
+        }
+
+        function renderMatchBadge(score) {
+            if (score === null) {
+                return `<div class="absolute top-4 left-4 bg-surface-variant text-on-surface-variant text-xs font-bold px-3 py-1 rounded-full shadow-sm">Add skills to see match %</div>`;
+            }
+            if (score >= 60) {
+                return `<div class="absolute top-4 left-4 bg-tertiary-container text-on-tertiary-container text-xs font-bold px-3 py-1 rounded-full shadow-sm">Live Match! ${score}%</div>`;
+            }
+            return `<div class="absolute top-4 left-4 bg-surface-container-high text-primary text-xs font-bold px-3 py-1 rounded-full shadow-sm">${score}% match</div>`;
+        }
+
         // Auth guard + load skills from Firestore + show all user matches
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 console.log("[Auth] No user found, redirecting to sign in.");
                 window.location.href = 'sign_in.html';
+                return;
+            }
+
+            const isGoogleUser = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
+            if (!user.emailVerified && !isGoogleUser) {
+                console.log("[Auth] User email not verified, redirecting to sign in.");
+                window.location.href = 'sign_in.html?unverified=true';
                 return;
             }
 
@@ -437,43 +445,49 @@
                 if (mobileNavAvatar) mobileNavAvatar.src = user.photoURL;
             }
 
-            // ── Step 1: Load the current user's profile from Firestore ──
+            // ── Step 1: Load the current user's profile from Firestore and keep it live ──
             let mySkillsToTeach = [];
             let mySkillsToLearn = [];
             let currentUserCollege = '';
+            let latestUsersSnapshot = null;
 
-            try {
-                const myDocSnap = await getDoc(doc(db, 'users', user.uid));
+            const myProfileRef = doc(db, 'users', user.uid);
+            onSnapshot(myProfileRef, (myDocSnap) => {
                 if (myDocSnap.exists()) {
                     const myData = myDocSnap.data();
-                    mySkillsToTeach = myData.skillsToTeach || [];
-                    mySkillsToLearn = myData.skillsToLearn || [];
+                    mySkillsToTeach = myData.skillsToTeach || myData.skillsOffered || [];
+                    mySkillsToLearn = myData.skillsToLearn || myData.skillsWanted || [];
                     currentUserCollege = myData.college || '';
                     console.log(`[Match] Me — teach: [${mySkillsToTeach}] | learn: [${mySkillsToLearn}]`);
-                    
-                    // Update avatar with stored photoURL if auth didn't have it
-                    if (myData.photoURL) {
-                        const topNavAvatar = document.getElementById('top-nav-avatar');
-                        if (topNavAvatar && !user.photoURL) topNavAvatar.src = myData.photoURL;
-                        const mobileNavAvatar = document.getElementById('mobile-top-nav-avatar');
-                        if (mobileNavAvatar && !user.photoURL) mobileNavAvatar.src = myData.photoURL;
+
+                    // Update sidebar college/dept live
+                    const sideCollege = document.getElementById('side-nav-college');
+                    const sideDept = document.getElementById('side-nav-dept');
+                    if (sideCollege) {
+                        sideCollege.innerHTML = currentUserCollege
+                            ? `<span>${currentUserCollege}</span>`
+                            : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
+                    }
+                    if (sideDept) {
+                        sideDept.textContent = (myData.major || myData.department || '').toString().trim() || '\u2014';
+                    }
+
+                    if (window.__setMyCollege) window.__setMyCollege(currentUserCollege);
+                    if (latestUsersSnapshot) {
+                        renderMatches(latestUsersSnapshot, mySkillsToTeach, mySkillsToLearn);
                     }
                 } else {
                     console.warn('[Match] Current user has no Firestore document. Showing all users.');
                 }
-            } catch (err) {
-                console.error('[Match] Failed to load current user profile:', err);
-            }
+            }, (err) => {
+                console.error('[Match] Failed to subscribe to current user profile:', err);
+            });
 
             // Expose college for the filter logic
             if (window.__setMyCollege) window.__setMyCollege(currentUserCollege);
 
-            // ── Step 2: Real-time listener on ALL users with isLookingForMatch = true ──
-            // We listen to the full collection and do client-side matching so we can
-            // handle array-contains-any with multiple values without hitting Firestore's
-            // 10-element limit on compound queries.
+            // ── Step 2: Real-time listener on ALL users ──
             const matchesGrid = document.getElementById('matches-grid');
-            const emptyState = document.getElementById('no-matches-state');
 
             // Show loading indicator
             matchesGrid.innerHTML = `
@@ -482,41 +496,67 @@
                     <p class="font-body-md text-body-md">Finding your matches...</p>
                 </div>`;
 
-            const matchQuery = query(
-                collection(db, 'users'),
-                where('isLookingForMatch', '==', true)
-            );
+            // Listen to all users in Firestore
+            const allUsersQuery = collection(db, 'users');
 
-            onSnapshot(matchQuery, (allUsersSnap) => {
+            function renderMatches(allUsersSnap, mySkillsToTeach, mySkillsToLearn) {
                 const matchCards = [];
+                const seenUids = new Set([user.uid]);
 
-                allUsersSnap.forEach(docSnap => {
-                    // ── Exclude yourself using document ID (most reliable) ──
-                    if (docSnap.id === user.uid) return;
+                // Collect all available target users exclusively from Firestore
+                const candidateUsers = [];
 
-                    const data = docSnap.data();
-                    const theirTeach = data.skillsToTeach || [];
-                    const theirLearn = data.skillsToLearn || [];
+                if (allUsersSnap) {
+                    allUsersSnap.forEach(docSnap => {
+                        if (docSnap.id === user.uid) return;
+                        seenUids.add(docSnap.id);
+                        candidateUsers.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                }
 
-                    // ── Step 3: Matching logic ──
-                    // A match exists if:
-                    //   (a) They can teach something I want to learn, OR
-                    //   (b) They want to learn something I can teach
-                    // If the viewer has no skills saved yet, show everyone.
+                const norm = list => (Array.isArray(list) ? list.map(s => String(s).trim().toLowerCase()).filter(Boolean) : []);
+                const myTeachNorm = norm(mySkillsToTeach);
+                const myLearnNorm = norm(mySkillsToLearn);
+                const hasMySkills = myTeachNorm.length > 0 || myLearnNorm.length > 0;
+
+                candidateUsers.forEach(peer => {
+                    const theirTeach = peer.skillsToTeach || peer.skillsOffered || [];
+                    const theirLearn = peer.skillsToLearn || peer.skillsWanted || [];
+                    const theirTeachNorm = norm(theirTeach);
+                    const theirLearnNorm = norm(theirLearn);
+
                     let isMatch = false;
-                    if (mySkillsToTeach.length === 0 && mySkillsToLearn.length === 0) {
-                        isMatch = true; // No preferences yet → show everyone
-                    } else {
-                        const theyCanTeachMe   = theirTeach.some(s => mySkillsToLearn.includes(s));
-                        const theyWantToLearnFromMe = theirLearn.some(s => mySkillsToTeach.includes(s));
-                        isMatch = theyCanTeachMe || theyWantToLearnFromMe;
-                    }
-                    if (!isMatch) return;
+                    let matchScore = null;
 
-                    // ── Step 4: Build the match card ──
-                    const name    = data.displayName || data.name || 'Student';
-                    const college = data.college || 'Your Campus';
-                    const major   = data.major   || '';
+                    if (!hasMySkills) {
+                        // If current user hasn't set skills yet, show all peers so they can browse
+                        isMatch = true;
+                        matchScore = null;
+                    } else {
+                        // Calculate mutual skill overlap
+                        const theyCanTeachMe = theirTeachNorm.some(s => myLearnNorm.some(w => w.includes(s) || s.includes(w)));
+                        const theyWantToLearnFromMe = theirLearnNorm.some(s => myTeachNorm.some(w => w.includes(s) || s.includes(w)));
+                        isMatch = theyCanTeachMe || theyWantToLearnFromMe;
+
+                        if (isMatch) {
+                            matchScore = calculateMutualMatchScore(mySkillsToTeach, mySkillsToLearn, theirTeach, theirLearn);
+                        }
+                    }
+
+                    // If no direct overlap when user has skills, but we want to display recommendations, calculate score anyway
+                    if (!isMatch && hasMySkills) {
+                        const calculated = calculateMutualMatchScore(mySkillsToTeach, mySkillsToLearn, theirTeach, theirLearn);
+                        if (calculated !== null && calculated > 0) {
+                            isMatch = true;
+                            matchScore = calculated;
+                        }
+                    }
+
+                    if (!isMatch && hasMySkills) return; // Skip non-matching peers if skills are explicitly set
+
+                    const name = peer.displayName || peer.name || 'Student';
+                    const college = peer.college || 'Campus';
+                    const major = peer.major || '';
                     const hasTeach = theirTeach.length > 0;
                     const hasLearn = theirLearn.length > 0;
 
@@ -528,24 +568,24 @@
                         ? theirLearn.map(s => `<span class="px-3 py-1 bg-[#0077B6]/10 text-[#0077B6] rounded-full font-badge-text text-badge-text border border-[#0077B6]/20">${s}</span>`).join('')
                         : `<span class="px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full font-badge-text text-badge-text">Not learning yet</span>`;
 
-                    const initials  = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                    const avatarHTML = data.photoURL
-                        ? `<img src="${data.photoURL}" alt="${name}" class="w-16 h-16 rounded-full object-cover border-2 border-primary shadow-sm" />`
+                    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                    const avatarHTML = peer.photoURL
+                        ? `<img src="${peer.photoURL}" alt="${name}" class="w-16 h-16 rounded-full object-cover border-2 border-primary shadow-sm" />`
                         : `<div class="w-16 h-16 rounded-full gradient-primary flex items-center justify-center border-2 border-primary text-white font-bold text-xl">${initials}</div>`;
 
                     const card = document.createElement('article');
                     card.className = 'match-card bg-surface-container-lowest rounded-xl p-md border-2 border-primary shadow-md hover:shadow-lg hover:scale-[1.01] transition-all relative group flex flex-col h-full';
                     card.dataset.college = college;
-                    card.dataset.skills  = theirTeach.join(',').toLowerCase();
-                    card.dataset.uid     = docSnap.id;
+                    card.dataset.skills = theirTeach.join(',').toLowerCase();
+                    card.dataset.uid = peer.id || peer.uid;
                     card.innerHTML = `
-                        <div class="absolute -top-3 left-4 bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full shadow-sm">Live Match!</div>
+                        ${renderMatchBadge(matchScore)}
                         <div class="absolute top-md right-md flex items-center justify-center w-12 h-12">
                             <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                                 <path class="text-surface-variant" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#675df9" stroke-dasharray="90, 100" stroke-linecap="round" stroke-width="3"></path>
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#675df9" stroke-dasharray="${matchScore !== null ? matchScore + ', 100' : '0, 100'}" stroke-linecap="round" stroke-width="3"></path>
                             </svg>
-                            <span class="absolute font-badge-text text-badge-text text-primary">90%</span>
+                            <span class="absolute font-badge-text text-badge-text text-primary">${matchScore !== null ? matchScore : '--'}%</span>
                         </div>
                         <div class="flex items-start gap-4 mb-lg">
                             ${avatarHTML}
@@ -571,7 +611,7 @@
                             </div>
                         </div>
                         <div class="mt-lg pt-4 border-t border-outline-variant">
-                            <button class="swap-request-btn w-full py-2 px-4 gradient-primary text-on-primary rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2" data-name="${name}" data-uid="${docSnap.id}">
+                            <button class="swap-request-btn w-full py-2 px-4 gradient-primary text-on-primary rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2" data-name="${name}" data-uid="${peer.id || peer.uid}">
                                 <span class="material-symbols-outlined text-sm">send</span>
                                 Send Swap Request
                             </button>
@@ -580,41 +620,41 @@
                     matchCards.push(card);
                 });
 
-                // ── Step 5: Render results ──
-                matchesGrid.innerHTML = ''; // Clear loading spinner / old cards
+                // Render results
+                matchesGrid.innerHTML = '';
 
                 if (matchCards.length === 0) {
-                    // Empty state
                     matchesGrid.innerHTML = `
                         <div class="col-span-full flex flex-col items-center justify-center py-16 text-on-surface-variant gap-4">
                             <span class="material-symbols-outlined text-6xl text-outline">group_off</span>
-                            <h3 class="font-title-md text-title-md text-on-surface">No matches found yet</h3>
-                            <p class="font-body-md text-body-md text-center max-w-sm">Save your skills first using the <strong>Teach Skill</strong> button, or wait for other users to join.</p>
-                            <a href="teach_skill.html" class="mt-2 px-6 py-2 gradient-primary text-on-primary rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all">Set My Skills</a>
+                            <h3 class="font-title-md text-title-md text-on-surface">No matching peers found</h3>
+                            <p class="font-body-md text-body-md text-center max-w-sm">Add or update your skills in Edit Profile to find more skill swap partners.</p>
+                            <a href="edit_profile.html?section=skills" class="mt-2 px-6 py-2 gradient-primary text-on-primary rounded-lg font-title-md text-title-md shadow-sm hover:shadow-md transition-all">Edit My Skills</a>
                         </div>`;
                 } else {
                     matchCards.forEach(card => matchesGrid.appendChild(card));
                 }
 
-                applyFilters(currentUserCollege);
-            }); // End onSnapshot
+                applyFilters();
+            }
+
+            onSnapshot(allUsersQuery, (allUsersSnap) => {
+                latestUsersSnapshot = allUsersSnap;
+                renderMatches(allUsersSnap, mySkillsToTeach, mySkillsToLearn);
+            }, (err) => {
+                console.error('[Match] Error fetching users collection:', err);
+                renderMatches(null, mySkillsToTeach, mySkillsToLearn);
+            });
         });
 
-        // ========== SAME COLLEGE & SEARCH FILTER ==========
-        function applyFilters(myCollege) {
-            const sameCollegeOnly = document.getElementById('same-college').checked;
+        // ========== SEARCH FILTER ==========
+        function applyFilters() {
             const searchInput = document.getElementById('skill-search');
             const searchSkill = searchInput ? searchInput.value.toLowerCase().trim() : '';
             const cards = document.querySelectorAll('.match-card');
             
             cards.forEach(card => {
                 let show = true;
-                
-                if (sameCollegeOnly && myCollege) {
-                    const cardCollege = (card.dataset.college || '').trim().toLowerCase();
-                    const myCol = myCollege.trim().toLowerCase();
-                    if (cardCollege !== myCol) show = false;
-                }
                 
                 if (searchSkill) {
                     const cardSkills = (card.dataset.skills || '');
@@ -625,22 +665,13 @@
             });
         }
 
-        // Store college for filter use and wire listeners
-        let _myCollege = '';
-        document.getElementById('same-college').addEventListener('change', () => {
-            applyFilters(_myCollege);
-        });
-        
+        // Wire listener for search box
         const searchBox = document.getElementById('skill-search');
         if (searchBox) {
             searchBox.addEventListener('input', () => {
-                applyFilters(_myCollege);
+                applyFilters();
             });
         }
-
-        // Patch: also update _myCollege after auth loads
-        // We expose a global setter from inside the onAuthStateChanged block
-        window.__setMyCollege = (c) => { _myCollege = c; };
 
         // ========== SWAP REQUEST MODAL + TOAST LOGIC ==========
         const modal         = document.getElementById('swap-modal');
