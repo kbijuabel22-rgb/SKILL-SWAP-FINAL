@@ -2,29 +2,44 @@
   "rules": {
     "users": {
       "$uid": {
-        ".read": "auth != null",
+        ".read": true,
         ".write": "auth != null && auth.uid == $uid"
       }
     },
+    "user_swaps": {
+      ".read": "auth != null",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "swap_requests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
     "chats": {
+      ".read": "auth != null",
       "$chatId": {
-        ".read": "auth != null && data.child('participants').child(auth.uid).val() == true",
+        ".read": "auth != null",
         ".write": "auth != null"
       }
     },
     "messages": {
+      ".read": "auth != null",
       "$chatId": {
         ".read": "auth != null",
         ".write": "auth != null"
       }
     },
     "typing": {
+      ".read": "auth != null",
       "$chatId": {
         ".read": "auth != null",
         ".write": "auth != null"
       }
     },
     "unread": {
+      ".read": "auth != null",
       "$uid": {
         ".read": "auth != null",
         ".write": "auth != null"

@@ -744,25 +744,36 @@
         modalSendBtn.addEventListener('click', async () => {
             const name = currentRecipient;
             const uid = currentRecipientUid;
-            if (!uid || !window.__currentUserUid) return;
+            const currentSender = auth.currentUser;
+            const currentSenderUid = currentSender ? currentSender.uid : window.__currentUserUid;
+
+            if (!uid || !currentSenderUid) {
+                console.error("[Match] Cannot send swap request: user not authenticated or recipient missing.", { currentSenderUid, uid });
+                alert("Please make sure you are logged in to send a swap request.");
+                return;
+            }
 
             // Show sending state with spinner
-            modalSendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] icon-spin">progress_activity</span> Sending...';
+            modalSendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Sending...';
             modalSendBtn.disabled = true;
 
             const text = swapMessage.value.trim() || `Hi ${name}! I'd love to swap skills with you.`;
-            const chatId = window.__currentUserUid < uid ? `${window.__currentUserUid}_${uid}` : `${uid}_${window.__currentUserUid}`;
+            const chatId = currentSenderUid < uid ? `${currentSenderUid}_${uid}` : `${uid}_${currentSenderUid}`;
 
             try {
-                // Initialize Chat Meta
-                update(ref(rtdb, `chats/${chatId}/participants`), {
-                    [window.__currentUserUid]: true,
-                    [uid]: true
-                });
+                // 1. Initialize Chat Meta & Participants
+                try {
+                    await update(ref(rtdb, `chats/${chatId}/participants`), {
+                        [currentSenderUid]: true,
+                        [uid]: true
+                    });
+                } catch (metaErr) {
+                    console.warn("[Match] Warning updating chat participants:", metaErr);
+                }
 
-                // Push message
+                // 2. Push initial message
                 const msgData = {
-                    senderId: window.__currentUserUid,
+                    senderId: currentSenderUid,
                     receiverId: uid,
                     message: text,
                     timestamp: serverTimestamp(),
@@ -772,16 +783,67 @@
                 const newMsgRef = push(ref(rtdb, `messages/${chatId}`));
                 await set(newMsgRef, msgData);
 
-                // Update chat meta
-                const updates = {};
-                updates[`chats/${chatId}/lastMessage`] = text;
-                updates[`chats/${chatId}/lastMessageTime`] = serverTimestamp();
-                await update(ref(rtdb), updates);
+                // 3. Update chat meta
+                try {
+                    await update(ref(rtdb, `chats/${chatId}`), {
+                        lastMessage: text,
+                        lastMessageTime: serverTimestamp()
+                    });
+                } catch (chatErr) {
+                    console.warn("[Match] Warning updating chats meta:", chatErr);
+                }
 
-                // Increment target's unread count
-                const snap = await get(ref(rtdb, `unread/${uid}/${chatId}/count`));
-                const currentUnread = snap.val() || 0;
-                await set(ref(rtdb, `unread/${uid}/${chatId}/count`), currentUnread + 1);
+                // 4. Update Current User's Swaps (Sender)
+                try {
+                    await set(ref(rtdb, `user_swaps/${currentSenderUid}/${uid}`), {
+                        targetUserId: uid,
+                        lastMessage: text,
+                        status: 'pending',
+                        timestamp: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (swapErr) {
+                    console.warn("[Match] Warning updating sender user_swaps:", swapErr);
+                }
+
+                // 5. Update Target User's Swaps (Recipient)
+                try {
+                    await set(ref(rtdb, `user_swaps/${uid}/${currentSenderUid}`), {
+                        targetUserId: currentSenderUid,
+                        lastMessage: text,
+                        status: 'pending',
+                        timestamp: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (partnerSwapErr) {
+                    console.warn("[Match] Warning updating recipient user_swaps:", partnerSwapErr);
+                }
+
+                // 6. Record in swap_requests if permitted
+                try {
+                    const swapReqRef = push(ref(rtdb, 'swap_requests'));
+                    const requestId = swapReqRef.key;
+                    await set(swapReqRef, {
+                        id: requestId,
+                        senderId: currentSenderUid,
+                        receiverId: uid,
+                        message: text,
+                        status: "pending",
+                        timestamp: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (reqErr) {
+                    console.warn("[Match] swap_requests write bypassed or restricted:", reqErr);
+                }
+
+                // 7. Increment target's unread count safely
+                try {
+                    const snap = await get(ref(rtdb, `unread/${uid}/${chatId}/count`));
+                    const currentUnread = snap.exists() ? (snap.val() || 0) : 0;
+                    await set(ref(rtdb, `unread/${uid}/${chatId}/count`), currentUnread + 1);
+                } catch (unreadErr) {
+                    console.warn("[Match] Warning updating unread counter:", unreadErr);
+                }
 
                 closeModal();
                 // Reset button for next use
@@ -789,10 +851,10 @@
                 modalSendBtn.disabled = false;
                 showToast(name);
             } catch (err) {
-                console.error("Failed to send request", err);
+                console.error("[Match] Failed to send swap request:", err);
                 modalSendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">send</span> Send Request';
                 modalSendBtn.disabled = false;
-                alert("Failed to send the request. Please try again.");
+                alert("Failed to send the request: " + (err.message || err));
             }
         });
     </script>

@@ -250,7 +250,7 @@
 </div>
 <p id="profile-completion-helper" class="mt-3 text-on-surface-variant text-xs text-center font-medium">Loading profile status...</p>
 </div>
-</section>ion>
+</section>
 <!-- Quick Actions Bento -->
 <section>
 <h2 class="font-title-md text-title-md mb-sm text-on-surface">Quick Actions</h2>
@@ -343,7 +343,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { initializeFirestore, doc, getDoc, collection, getDocs, onSnapshot as fsOnSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, get, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
@@ -627,9 +627,311 @@
                 statsContainer.innerHTML = '<div class="text-on-surface-variant">Loading campus stats…</div>';
             }
 
+            let latestFirestoreUsers = [];
+            let latestRtdbSwaps = null;
+
+            async function renderCurrentSwaps() {
+                if (!swapsContainer) return;
+
+                let activeSwapsMap = {};
+
+                // 1. Include any RTDB user_swaps
+                if (latestRtdbSwaps && typeof latestRtdbSwaps === 'object') {
+                    Object.assign(activeSwapsMap, latestRtdbSwaps);
+                }
+
+                // 2. Fallback check: gather from RTDB chats node
+                try {
+                    const chatsSnap = await get(ref(rtdb, 'chats'));
+                    if (chatsSnap.exists()) {
+                        chatsSnap.forEach((chatChild) => {
+                            const cData = chatChild.val();
+                            const chatId = chatChild.key;
+                            let partnerId = null;
+
+                            if (cData && cData.participants && cData.participants[user.uid]) {
+                                partnerId = Object.keys(cData.participants).find(id => id !== user.uid);
+                            } else if (chatId && chatId.includes(user.uid) && chatId.includes('_')) {
+                                const parts = chatId.split('_');
+                                if (parts.length === 2) {
+                                    if (parts[0] === user.uid) partnerId = parts[1];
+                                    else if (parts[1] === user.uid) partnerId = parts[0];
+                                }
+                            }
+
+                            if (partnerId && partnerId !== user.uid) {
+                                if (!activeSwapsMap[partnerId]) {
+                                    activeSwapsMap[partnerId] = {
+                                        targetUserId: partnerId,
+                                        lastMessage: (cData && cData.lastMessage) ? cData.lastMessage : 'Chat started',
+                                        updatedAt: (cData && cData.lastMessageTime) ? cData.lastMessageTime : Date.now(),
+                                        timestamp: (cData && cData.lastMessageTime) ? cData.lastMessageTime : Date.now(),
+                                        status: 'active'
+                                    };
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.warn('[Dashboard] Fallback chats check error:', e);
+                }
+
+                // 3. Fallback check: gather from RTDB unread node
+                try {
+                    const unreadSnap = await get(ref(rtdb, `unread/${user.uid}`));
+                    if (unreadSnap.exists()) {
+                        unreadSnap.forEach((uChild) => {
+                            const chatId = uChild.key;
+                            if (chatId && chatId.includes('_')) {
+                                const parts = chatId.split('_');
+                                const partnerId = parts[0] === user.uid ? parts[1] : (parts[1] === user.uid ? parts[0] : null);
+                                if (partnerId && partnerId !== user.uid && !activeSwapsMap[partnerId]) {
+                                    activeSwapsMap[partnerId] = {
+                                        targetUserId: partnerId,
+                                        lastMessage: 'Chat active',
+                                        updatedAt: Date.now(),
+                                        timestamp: Date.now(),
+                                        status: 'active'
+                                    };
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {}
+
+                // 4. Fallback check: gather from RTDB messages node
+                try {
+                    const msgsSnap = await get(ref(rtdb, 'messages'));
+                    if (msgsSnap.exists()) {
+                        msgsSnap.forEach((mChild) => {
+                            const chatId = mChild.key;
+                            if (chatId && chatId.includes(user.uid) && chatId.includes('_')) {
+                                const parts = chatId.split('_');
+                                const partnerId = parts[0] === user.uid ? parts[1] : (parts[1] === user.uid ? parts[0] : null);
+                                if (partnerId && partnerId !== user.uid && !activeSwapsMap[partnerId]) {
+                                    let lastText = 'Chat started';
+                                    let lastTime = Date.now();
+                                    const mVal = mChild.val();
+                                    if (mVal && typeof mVal === 'object') {
+                                        const msgList = Object.values(mVal);
+                                        const lastM = msgList[msgList.length - 1];
+                                        if (lastM) {
+                                            lastText = lastM.message || lastText;
+                                            lastTime = lastM.timestamp || lastTime;
+                                        }
+                                    }
+                                    activeSwapsMap[partnerId] = {
+                                        targetUserId: partnerId,
+                                        lastMessage: lastText,
+                                        updatedAt: lastTime,
+                                        timestamp: lastTime,
+                                        status: 'active'
+                                    };
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {}
+
+                const swapEntries = Object.entries(activeSwapsMap).filter(([partnerId]) => partnerId && partnerId !== user.uid);
+
+                if (swapEntries.length > 0) {
+                    swapEntries.sort((a, b) => {
+                        const timeA = (a[1] && (a[1].updatedAt || a[1].timestamp)) || 0;
+                        const timeB = (b[1] && (b[1].updatedAt || b[1].timestamp)) || 0;
+                        return timeB - timeA;
+                    });
+                    
+                    const cardsPromises = swapEntries.map(async ([partnerId, swapData]) => {
+                        const targetId = (swapData && swapData.targetUserId) ? swapData.targetUserId : partnerId;
+                        let partnerProfile = latestFirestoreUsers.find(u => u.uid === targetId);
+                        
+                        if (!partnerProfile) {
+                            try {
+                                const partnerDoc = await getDoc(doc(db, 'users', targetId));
+                                if (partnerDoc.exists()) {
+                                    partnerProfile = { uid: targetId, ...partnerDoc.data() };
+                                }
+                            } catch (e) {
+                                console.warn('[Dashboard] Could not fetch partner user doc:', e);
+                            }
+                        }
+
+                        // Skip users that don't exist in the database
+                        if (!partnerProfile) return null;
+
+                        const partnerName = partnerProfile.displayName || partnerProfile.name || 'Student Peer';
+                        const partnerPhoto = partnerProfile?.photoURL || '';
+                        const partnerSkills = (partnerProfile?.skillsOffered || partnerProfile?.skillsToTeach || []).slice(0, 2);
+                        const lastMsg = (swapData && swapData.lastMessage) ? swapData.lastMessage : 'Swap initiated';
+                        const status = (swapData && swapData.status) ? swapData.status : 'Active';
+                        const rawTime = swapData ? (swapData.updatedAt || swapData.timestamp) : null;
+                        const timeText = rawTime ? new Date(rawTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+                        return `
+                            <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:border-primary/50 transition-all group relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+                                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+                                <div class="flex items-center gap-md">
+                                    <div onclick="window.location.href='student_portfolio.html?userId=${encodeURIComponent(targetId)}'" class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant cursor-pointer hover:ring-2 hover:ring-primary transition-all flex items-center justify-center bg-surface-variant flex-shrink-0">
+                                        ${partnerPhoto 
+                                            ? `<img src="${partnerPhoto}" alt="${partnerName}" class="w-full h-full object-cover"/>`
+                                            : `<div class="w-full h-full gradient-primary flex items-center justify-center text-white font-bold text-lg">${partnerName.charAt(0).toUpperCase()}</div>`
+                                        }
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-xs mb-0.5">
+                                            <h3 onclick="window.location.href='student_portfolio.html?userId=${encodeURIComponent(targetId)}'" class="font-title-md text-title-md text-on-surface text-base hover:text-primary cursor-pointer transition-colors font-bold">${partnerName}</h3>
+                                            <span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px] uppercase font-bold border border-primary/20">${status}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-xs text-on-surface-variant line-clamp-1">
+                                            <span class="material-symbols-outlined text-[14px] text-primary">chat_bubble</span>
+                                            <span class="truncate max-w-[200px] sm:max-w-[280px]">${lastMsg}</span>
+                                            ${timeText ? `<span class="opacity-60 text-[10px] ml-1">&bull; ${timeText}</span>` : ''}
+                                        </div>
+                                        ${partnerSkills.length > 0 ? `
+                                            <div class="flex items-center gap-1 mt-1.5 flex-wrap">
+                                                ${partnerSkills.map(s => `<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-secondary-container/20 text-secondary border border-secondary/20">${s}</span>`).join('')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 self-end md:self-center">
+                                    <button onclick="window.location.href='student_portfolio.html?userId=${encodeURIComponent(targetId)}'" class="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-high text-xs font-semibold text-on-surface-variant transition-all">
+                                        View Profile
+                                    </button>
+                                    <button onclick="openChat('${targetId}')" class="px-4 py-1.5 rounded-lg gradient-primary text-white text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[15px]">chat</span>
+                                        Chat
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const cardsHTML = (await Promise.all(cardsPromises)).filter(Boolean);
+                    if (cardsHTML.length > 0) {
+                        swapsContainer.innerHTML = cardsHTML.join('');
+                        return;
+                    }
+                }
+
+                // 2. Fallback to Firestore swaps if any
+                const userDocSnap = latestFirestoreUsers.find(d => d.uid === user.uid);
+                const userData = userDocSnap || {};
+                const mySwaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
+
+                if (mySwaps.length > 0) {
+                    swapsContainer.innerHTML = mySwaps.map((swap) => {
+                        const partner = swap.with || swap.peerName || swap.partner || 'Peer';
+                        const title = swap.title || swap.activity || 'Swap Session';
+                        const status = swap.status || 'Active';
+                        const isCompleted = status.toLowerCase().includes('complet');
+
+                        return `
+                            <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1.5 ${isCompleted ? 'bg-tertiary' : 'bg-primary'}"></div>
+                                <div class="flex flex-col md:flex-row justify-between gap-md">
+                                    <div class="flex items-start gap-md">
+                                        <div class="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-lg">
+                                            ${partner.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-xs mb-xs">
+                                                <h3 class="font-title-md text-title-md text-on-surface text-base">${title}</h3>
+                                                <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px]">${status}</span>
+                                            </div>
+                                            <p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm">With ${partner}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('');
+                } else {
+                    swapsContainer.innerHTML = `
+                        <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-6 text-center">
+                            <span class="material-symbols-outlined text-3xl text-primary block mb-2">swap_horiz</span>
+                            <p class="text-sm font-semibold text-on-surface mb-1">No active swaps yet</p>
+                            <p class="text-xs text-on-surface-variant mb-4">Connect with peers in Matches or Chat to start swapping skills!</p>
+                            <a href="match_discovery.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white font-badge-text text-badge-text shadow-sm hover:shadow-md transition-all">
+                                <span class="material-symbols-outlined text-sm">search</span>
+                                Browse Matches
+                            </a>
+                        </div>`;
+                }
+            }
+
+            // Real-time listener for user_swaps from RTDB
+            onValue(ref(rtdb, `user_swaps/${user.uid}`), (snap) => {
+                latestRtdbSwaps = snap.exists() ? snap.val() : null;
+                renderCurrentSwaps();
+            });
+
+            // Auto-sync any existing active chats into user_swaps from chats and unread nodes
+            try {
+                onValue(ref(rtdb, 'chats'), (chatsSnap) => {
+                    if (chatsSnap.exists()) {
+                        chatsSnap.forEach((chatChild) => {
+                            const cData = chatChild.val();
+                            const chatId = chatChild.key;
+                            if (cData) {
+                                let partnerId = null;
+                                if (cData.participants && cData.participants[user.uid]) {
+                                    partnerId = Object.keys(cData.participants).find(id => id !== user.uid);
+                                } else if (chatId && chatId.includes(user.uid) && chatId.includes('_')) {
+                                    const parts = chatId.split('_');
+                                    if (parts.length === 2) {
+                                        if (parts[0] === user.uid) partnerId = parts[1];
+                                        else if (parts[1] === user.uid) partnerId = parts[0];
+                                    }
+                                }
+                                if (partnerId) {
+                                    if (!latestRtdbSwaps || !latestRtdbSwaps[partnerId]) {
+                                        set(ref(rtdb, `user_swaps/${user.uid}/${partnerId}`), {
+                                            targetUserId: partnerId,
+                                            lastMessage: cData.lastMessage || 'Chat started',
+                                            updatedAt: cData.lastMessageTime || serverTimestamp(),
+                                            timestamp: cData.lastMessageTime || serverTimestamp(),
+                                            status: 'active'
+                                        }).catch(() => {});
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            } catch (syncErr) {
+                console.warn('[Dashboard] Chat sync check notice:', syncErr);
+            }
+
+            try {
+                onValue(ref(rtdb, `unread/${user.uid}`), (unreadSnap) => {
+                    if (unreadSnap.exists()) {
+                        unreadSnap.forEach((uChild) => {
+                            const chatId = uChild.key;
+                            if (chatId && chatId.includes('_')) {
+                                const parts = chatId.split('_');
+                                const partnerId = parts[0] === user.uid ? parts[1] : (parts[1] === user.uid ? parts[0] : null);
+                                if (partnerId) {
+                                    if (!latestRtdbSwaps || !latestRtdbSwaps[partnerId]) {
+                                        set(ref(rtdb, `user_swaps/${user.uid}/${partnerId}`), {
+                                            targetUserId: partnerId,
+                                            lastMessage: 'Chat active',
+                                            updatedAt: serverTimestamp(),
+                                            timestamp: serverTimestamp(),
+                                            status: 'active'
+                                        }).catch(() => {});
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            } catch (uErr) {}
+
             fsOnSnapshot(collection(db, 'users'), (usersSnap) => {
-                const firestoreUsers = usersSnap.docs.map(d => d.data() || {});
-                const leaderboard = window.SkillSwapState.getCampusLeaderboard(currentUserCollege, firestoreUsers);
+                latestFirestoreUsers = usersSnap.docs.map(d => ({ uid: d.id, ...(d.data() || {}) }));
+                const leaderboard = window.SkillSwapState.getCampusLeaderboard(currentUserCollege, latestFirestoreUsers);
+                renderCurrentSwaps();
 
                 const campusSubtitle = document.getElementById('campus-stats-subtitle');
                 if (campusSubtitle) {
@@ -671,52 +973,6 @@
                                 <span class="text-xs font-bold text-primary">${u.score}% Readiness</span>
                             </div>
                         `).join('');
-                    }
-                }
-
-                // ── Active Swaps: Filter ONLY for swaps the logged-in user is part of ──
-                const userDocSnap = usersSnap.docs.find(d => d.id === user.uid);
-                const userData = userDocSnap ? userDocSnap.data() : {};
-                const mySwaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
-
-                if (swapsContainer) {
-                    if (mySwaps.length === 0) {
-                        swapsContainer.innerHTML = `
-                            <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-6 text-center">
-                                <span class="material-symbols-outlined text-3xl text-primary block mb-2">swap_horiz</span>
-                                <p class="text-sm font-semibold text-on-surface mb-1">No active swaps yet</p>
-                                <p class="text-xs text-on-surface-variant mb-4">Connect with peers in Matches to start swapping skills!</p>
-                                <a href="match_discovery.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg gradient-primary text-white font-badge-text text-badge-text shadow-sm hover:shadow-md transition-all">
-                                    <span class="material-symbols-outlined text-sm">search</span>
-                                    Browse Matches
-                                </a>
-                            </div>`;
-                    } else {
-                        swapsContainer.innerHTML = mySwaps.map((swap) => {
-                            const partner = swap.with || swap.peerName || swap.partner || 'Peer';
-                            const title = swap.title || swap.activity || 'Swap Session';
-                            const status = swap.status || 'Active';
-                            const isCompleted = status.toLowerCase().includes('complet');
-
-                            return `
-                                <div class="bg-surface rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                                    <div class="absolute left-0 top-0 bottom-0 w-1 ${isCompleted ? 'bg-tertiary' : 'bg-primary'}"></div>
-                                    <div class="flex flex-col md:flex-row justify-between gap-md">
-                                        <div class="flex items-start gap-md">
-                                            <div class="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-lg">
-                                                ${partner.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div class="flex items-center gap-xs mb-xs">
-                                                    <h3 class="font-title-md text-title-md text-on-surface text-base">${title}</h3>
-                                                    <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps text-label-caps text-[10px]">${status}</span>
-                                                </div>
-                                                <p class="font-body-md text-body-md text-on-surface-variant text-sm mb-sm">With ${partner}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
-                        }).join('');
                     }
                 }
 

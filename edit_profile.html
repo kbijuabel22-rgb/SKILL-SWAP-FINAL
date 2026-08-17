@@ -408,7 +408,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { initializeFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytesResumable, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+    import { getDatabase, ref as rtdbRef, set as rtdbSet, get as rtdbGet, child as rtdbChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytesResumable, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
@@ -425,6 +426,7 @@
     const db = initializeFirestore(app, {
         experimentalForceLongPolling: true
     });
+    const rtdb = getDatabase(app);
     const storage = getStorage(app);
 
     let currentUserId = null;
@@ -435,6 +437,7 @@
     let photoURL = "";
     let isFirstTimeSetup = false;
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const MAX_BASE64_FALLBACK_SIZE = 2 * 1024 * 1024;
     const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
 
     const avatarPreview = document.getElementById('avatar-preview');
@@ -460,6 +463,7 @@
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
+        if (!toast) return;
         const icon = document.getElementById('toast-icon');
         const msg = document.getElementById('toast-msg');
         msg.textContent = message;
@@ -473,13 +477,105 @@
         toast.classList.remove('hidden');
         setTimeout(() => {
             toast.classList.add('hidden');
-        }, 3000);
+        }, 3500);
     }
 
     function ensureEntryId(entry) {
-        if (!entry.id) entry.id = `entry-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        if (!entry.id) entry.id = `cert-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         return entry.id;
     }
+
+    /**
+     * Syncs certification data directly under users/{userId}/certifications in Firebase Realtime Database
+     */
+    async function syncCertificationsToRTDB(userId, certsList) {
+        if (!userId) return;
+        try {
+            const cleanCerts = (certsList || [])
+                .filter(item => item && (item.title || item.name || item.issuingOrganization || item.issuer || item.issueDate || item.earnedDate || item.verificationUrl || item.fileUrl))
+                .map(item => ({
+                    id: String(item.id || Date.now()),
+                    title: String(item.title || item.name || '').trim(),
+                    issuingOrganization: String(item.issuingOrganization || item.issuer || '').trim(),
+                    issueDate: String(item.issueDate || item.earnedDate || '').trim(),
+                    verificationUrl: String(item.verificationUrl || '').trim(),
+                    fileUrl: String(item.fileUrl || '').trim()
+                }));
+            
+            const certsRef = rtdbRef(rtdb, `users/${userId}/certifications`);
+            await rtdbSet(certsRef, cleanCerts);
+            console.log(`[RTDB] Certifications synced successfully to users/${userId}/certifications:`, cleanCerts);
+        } catch (err) {
+            console.error('[RTDB] Error syncing certifications to Realtime Database:', err);
+        }
+    }
+
+    /**
+     * Converts a Base64 data string into a Blob for safe browser viewing
+     */
+    function base64ToBlob(base64Data, defaultContentType = 'application/pdf') {
+        let contentType = defaultContentType;
+        let base64String = base64Data;
+
+        if (base64Data.includes(';base64,')) {
+            const parts = base64Data.split(';base64,');
+            contentType = parts[0].replace('data:', '') || defaultContentType;
+            base64String = parts[1];
+        } else if (base64Data.startsWith('data:')) {
+            const parts = base64Data.split(',');
+            contentType = parts[0].replace('data:', '').split(';')[0] || defaultContentType;
+            base64String = parts[1] || '';
+        }
+
+        try {
+            const byteCharacters = atob(base64String.trim());
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                byteArrays.push(new Uint8Array(byteNumbers));
+            }
+
+            return new Blob(byteArrays, { type: contentType });
+        } catch (e) {
+            console.error('[Base64] Conversion error:', e);
+            return new Blob([base64Data], { type: contentType });
+        }
+    }
+
+    /**
+     * Safely opens a certificate file (handles both remote URLs and Base64/PDF data URIs)
+     */
+    function openCertificateFile(fileUrl) {
+        if (!fileUrl) return;
+        try {
+            if (fileUrl.startsWith('data:')) {
+                const blob = base64ToBlob(fileUrl);
+                const objectUrl = URL.createObjectURL(blob);
+                const newTab = window.open(objectUrl, '_blank');
+                if (!newTab) {
+                    const tempLink = document.createElement('a');
+                    tempLink.href = objectUrl;
+                    tempLink.target = '_blank';
+                    tempLink.rel = 'noopener noreferrer';
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                }
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+            } else {
+                window.open(fileUrl, '_blank', 'noopener,noreferrer');
+            }
+        } catch (err) {
+            console.error('[Certificate] Error opening file:', err);
+            window.open(fileUrl, '_blank');
+        }
+    }
+    window.openCertificateFile = openCertificateFile;
 
     function renderCertifications() {
         const container = document.getElementById('certifications-form-list');
@@ -490,25 +586,73 @@
         }
         container.innerHTML = certifications.map((item, index) => {
             const id = ensureEntryId(item);
+            const titleVal = item.title || item.name || '';
+            const orgVal = item.issuingOrganization || item.issuer || '';
+            const dateVal = item.issueDate || item.earnedDate || '';
+            const verifyVal = item.verificationUrl || '';
+
             return `
                 <div class="rounded-xl border border-outline-variant/40 p-3 bg-surface-container-low/20 space-y-3">
                     <div class="flex items-center justify-between">
                         <p class="text-sm font-semibold text-on-surface">Certification ${index + 1}</p>
-                        <button type="button" data-action="remove-certification" data-index="${index}" class="text-xs text-error">Remove</button>
+                        <button type="button" data-action="remove-certification" data-index="${index}" class="text-xs text-error hover:underline transition-all">Remove</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input data-field="name" data-index="${index}" value="${(item.name || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Certification name"/>
-                        <input data-field="issuer" data-index="${index}" value="${(item.issuer || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Issuing organization"/>
-                        <input data-field="earnedDate" data-index="${index}" type="date" value="${item.earnedDate || ''}" class="custom-input rounded-xl px-3 py-2 text-sm"/>
-                        <input data-field="verificationUrl" data-index="${index}" value="${(item.verificationUrl || '').replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm" placeholder="Verification URL (optional)"/>
+                        <div>
+                            <label class="text-[11px] font-semibold text-on-surface-variant block mb-1">Certification Name</label>
+                            <input data-field="title" data-index="${index}" value="${titleVal.replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm w-full" placeholder="e.g. AWS Certified Cloud Practitioner"/>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-on-surface-variant block mb-1">Issuing Organization</label>
+                            <input data-field="issuingOrganization" data-index="${index}" value="${orgVal.replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm w-full" placeholder="e.g. Amazon Web Services, Coursera"/>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-on-surface-variant block mb-1">Issue Date</label>
+                            <input data-field="issueDate" data-index="${index}" type="date" value="${dateVal}" class="custom-input rounded-xl px-3 py-2 text-sm w-full"/>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-on-surface-variant block mb-1">Verification URL (optional)</label>
+                            <input data-field="verificationUrl" data-index="${index}" value="${verifyVal.replace(/"/g, '&quot;')}" class="custom-input rounded-xl px-3 py-2 text-sm w-full" placeholder="https://coursera.org/verify/..."/>
+                        </div>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-on-surface-variant">Certificate file upload (PDF or image, max 5 MB)</label>
+                    <div class="space-y-2 pt-1 border-t border-outline-variant/20">
+                        <label class="text-xs font-semibold text-on-surface-variant flex items-center justify-between">
+                            <span>Certificate file upload (PDF or image, max 5 MB)</span>
+                            ${item.fileName ? `<span class="font-normal text-on-surface-variant/80 text-[11px] truncate max-w-[200px]">${item.fileName}</span>` : ''}
+                        </label>
                         <input type="file" data-role="cert-file" data-index="${index}" accept="application/pdf,image/png,image/jpeg,image/jpg" class="custom-input rounded-xl px-3 py-2 text-sm w-full"/>
-                        <div class="text-xs text-on-surface-variant">${item.fileName ? `Current file: ${item.fileName}` : 'No file uploaded yet.'}</div>
-                        ${item.fileUrl ? `<div class="text-xs text-emerald-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Certificate uploaded successfully</div><a href="${item.fileUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">Open uploaded file</a>` : ''}
-                        ${item.uploading ? `<div class="text-xs text-primary flex items-center gap-1"><span class="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> Uploading... ${item.uploadProgress || 0}%</div>` : ''}
-                        ${item.uploadError ? `<div class="text-xs text-error">${item.uploadError}</div>` : ''}
+                        
+                        ${item.uploading ? `
+                            <div class="p-2.5 rounded-xl bg-primary/10 border border-primary/20 flex flex-col gap-1.5">
+                                <div class="text-xs text-primary font-medium flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] animate-spin">progress_activity</span> Uploading certificate...</span>
+                                    <span class="font-bold">${item.uploadProgress || 0}%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-primary h-1.5 rounded-full transition-all duration-300" style="width: ${item.uploadProgress || 0}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${item.fileUrl && !item.uploading ? `
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                <div class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                    <span>Uploaded successfully</span>
+                                </div>
+                                <button type="button" data-action="view-cert-file" data-index="${index}" class="inline-flex items-center gap-1 text-xs text-primary hover:underline font-semibold cursor-pointer bg-transparent border-0 p-0">
+                                    <span>Open uploaded file</span>
+                                    <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                                </button>
+                            </div>
+                        ` : ''}
+
+                        ${item.uploadError ? `
+                            <div class="p-2 rounded-xl bg-error/10 border border-error/20 text-xs text-error flex items-start gap-1.5">
+                                <span class="material-symbols-outlined text-[15px] shrink-0 mt-0.5">error</span>
+                                <span>${item.uploadError}</span>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -592,6 +736,42 @@
         photoStatusEl.className = isError ? 'text-xs text-error' : 'text-xs text-on-surface-variant';
     }
 
+    /**
+     * Reads a file locally as Base64 Data URI with progress tracking
+     */
+    function readFileAsBase64(file, onProgress) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            let progressInterval = null;
+            let currentPct = 20;
+
+            progressInterval = setInterval(() => {
+                if (currentPct < 90) {
+                    currentPct += 15;
+                    if (typeof onProgress === 'function') onProgress(currentPct);
+                }
+            }, 100);
+
+            reader.onload = () => {
+                if (progressInterval) clearInterval(progressInterval);
+                if (typeof onProgress === 'function') onProgress(100);
+                resolve(reader.result);
+            };
+            reader.onerror = (err) => {
+                if (progressInterval) clearInterval(progressInterval);
+                console.error('[Base64] FileReader error:', err);
+                reject(new Error('Failed to read file locally.'));
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /**
+     * Robust file upload helper:
+     * 1. Attempts Firebase Storage upload with uploadBytesResumable
+     * 2. Tracks real-time upload progress (0% -> 100%)
+     * 3. Catches Storage errors/timeouts and falls back gracefully to Base64 data URI for files <= 2MB
+     */
     async function uploadUserFile(file, folder, onProgress) {
         if (!file) throw new Error('No file selected.');
         if (!allowedFileTypes.includes(file.type)) {
@@ -601,60 +781,97 @@
             throw new Error('Please choose a file smaller than 5 MB.');
         }
 
-        const filePath = `${folder}/${currentUserId || 'guest'}/${Date.now()}-${file.name}`;
-        const storageRef = ref(storage, filePath);
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${folder}/${currentUserId || 'guest'}/${Date.now()}-${safeFileName}`;
+        const sRef = storageRef(storage, filePath);
+
+        // Initial progress tick
+        if (typeof onProgress === 'function') onProgress(10);
 
         try {
-            // Attempt uploadBytesResumable with progress monitoring
-            return await new Promise((resolve, reject) => {
+            // Attempt upload to Firebase Storage with timeout guard
+            const storageResult = await new Promise((resolve, reject) => {
                 let resolved = false;
-                const uploadTask = uploadBytesResumable(storageRef, file);
+                let simProgress = 15;
+                const simInterval = setInterval(() => {
+                    if (!resolved && simProgress < 85) {
+                        simProgress += 10;
+                        if (typeof onProgress === 'function') onProgress(simProgress);
+                    }
+                }, 350);
 
-                uploadTask.on('state_changed', (snapshot) => {
-                    if (snapshot.totalBytes > 0) {
-                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                        if (typeof onProgress === 'function') onProgress(progress);
-                    }
-                }, (error) => {
-                    console.warn('[Upload] Resumable task failed, falling back to uploadBytes:', error);
-                    if (!resolved) {
-                        resolved = true;
-                        // Fallback to standard uploadBytes
-                        uploadBytes(storageRef, file).then(async (snap) => {
-                            if (typeof onProgress === 'function') onProgress(100);
-                            const downloadURL = await getDownloadURL(snap.ref);
-                            resolve({ url: downloadURL, fileName: file.name, type: file.type });
-                        }).catch(reject);
-                    }
-                }, async () => {
-                    if (!resolved) {
-                        resolved = true;
-                        if (typeof onProgress === 'function') onProgress(100);
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        resolve({ url: downloadURL, fileName: file.name, type: file.type });
-                    }
-                });
+                let uploadTask;
+                try {
+                    uploadTask = uploadBytesResumable(sRef, file);
+                } catch (initErr) {
+                    if (simInterval) clearInterval(simInterval);
+                    return reject(initErr);
+                }
 
-                // Safety timeout fallback if resumable task gets stuck at 0%
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        if (snapshot.totalBytes > 0) {
+                            const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            if (typeof onProgress === 'function') onProgress(Math.max(pct, 20));
+                        }
+                    },
+                    (error) => {
+                        if (simInterval) clearInterval(simInterval);
+                        if (!resolved) {
+                            resolved = true;
+                            console.warn('[Upload] Firebase Storage uploadTask failed:', error);
+                            reject(error);
+                        }
+                    },
+                    async () => {
+                        if (simInterval) clearInterval(simInterval);
+                        if (!resolved) {
+                            resolved = true;
+                            try {
+                                if (typeof onProgress === 'function') onProgress(100);
+                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                                resolve({ url: downloadURL, fileName: file.name, type: file.type, storage: true });
+                            } catch (urlErr) {
+                                reject(urlErr);
+                            }
+                        }
+                    }
+                );
+
+                // Connection safety timeout (5 seconds): if Firebase Storage is blocked / offline / hanging at 0%
                 setTimeout(() => {
-                    if (!resolved && uploadTask.snapshot.bytesTransferred === 0) {
-                        console.warn('[Upload] Resumable task timed out, using uploadBytes fallback...');
+                    if (!resolved) {
+                        if (simInterval) clearInterval(simInterval);
                         resolved = true;
-                        uploadBytes(storageRef, file).then(async (snap) => {
-                            if (typeof onProgress === 'function') onProgress(100);
-                            const downloadURL = await getDownloadURL(snap.ref);
-                            resolve({ url: downloadURL, fileName: file.name, type: file.type });
-                        }).catch(reject);
+                        try {
+                            uploadTask.cancel();
+                        } catch (e) {
+                            // ignore cancel error
+                        }
+                        reject(new Error('Firebase Storage upload connection timed out.'));
                     }
-                }, 4000);
+                }, 5000);
             });
-        } catch (err) {
-            console.error('[Upload] Storage upload error:', err);
-            throw new Error(err.message || 'Upload failed. Please try another file.');
+
+            return storageResult;
+        } catch (storageError) {
+            console.warn('[Upload] Firebase Storage unavailable or failed. Evaluating fallback:', storageError);
+
+            // Gracefully fallback to Base64 data URI storage if file size <= 2 MB
+            if (file.size <= MAX_BASE64_FALLBACK_SIZE) {
+                console.info('[Upload] Using Base64 Data URI fallback for file:', file.name);
+                if (typeof onProgress === 'function') onProgress(50);
+                const base64Url = await readFileAsBase64(file, onProgress);
+                if (typeof onProgress === 'function') onProgress(100);
+                return { url: base64Url, fileName: file.name, type: file.type, isBase64: true };
+            } else {
+                throw new Error('Firebase Storage is unavailable and file exceeds 2 MB limit for direct database storage. Please upload a file smaller than 2 MB.');
+            }
         }
     }
 
     async function handleFileUpload(file, entryType, index) {
+        if (!file) return;
         if (!currentUserId) {
             showToast('Please wait — user session is loading. Try again.', true);
             return;
@@ -663,11 +880,11 @@
         if (!target) return;
 
         target.uploading = true;
-        target.uploadProgress = 0;
+        target.uploadProgress = 10;
         target.uploadError = '';
         if (entryType === 'certification') renderCertifications(); else renderProjects();
 
-        // Progress callback — re-renders the card on each Firebase progress tick
+        // Progress callback to re-render dynamic progress (0% -> 100%)
         const onProgress = (progress) => {
             target.uploadProgress = progress;
             if (entryType === 'certification') renderCertifications(); else renderProjects();
@@ -675,34 +892,68 @@
 
         try {
             const result = await uploadUserFile(file, `portfolio/${entryType}s`, onProgress);
-            // Correctly map fields: certifications use fileUrl/fileName, projects use thumbnailUrl/thumbnailName
+
             if (entryType === 'certification') {
                 target.fileUrl = result.url;
                 target.fileName = result.fileName;
                 target.fileType = result.type;
+                target.uploading = false;
+                target.uploadProgress = 100;
+                target.uploadError = '';
+                renderCertifications();
+
+                // Store returned URL in Realtime Database under users/{userId}/certifications immediately
+                await syncCertificationsToRTDB(currentUserId, certifications);
+                showToast('Certificate uploaded and saved successfully!');
             } else {
                 target.thumbnailUrl = result.url;
                 target.thumbnailName = result.fileName;
                 target.thumbnailType = result.type;
+                target.uploading = false;
+                target.uploadProgress = 100;
+                target.uploadError = '';
+                renderProjects();
+                showToast('Project thumbnail uploaded successfully!');
             }
-            target.uploading = false;
-            target.uploadProgress = 100;
-            target.uploadError = '';
         } catch (error) {
+            console.error('[Upload] Upload failed:', error);
             target.uploading = false;
             target.uploadProgress = 0;
             target.uploadError = error.message || 'Upload failed. Please try another file.';
+            if (entryType === 'certification') renderCertifications(); else renderProjects();
+            showToast(target.uploadError, true);
         }
-        if (entryType === 'certification') renderCertifications(); else renderProjects();
     }
 
     document.getElementById('add-certification-btn').addEventListener('click', () => {
-        certifications.push({ name: '', issuer: '', earnedDate: '', verificationUrl: '', fileUrl: '', fileName: '', fileType: '' });
+        certifications.push({
+            id: `cert-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            title: '',
+            name: '',
+            issuingOrganization: '',
+            issuer: '',
+            issueDate: '',
+            earnedDate: '',
+            verificationUrl: '',
+            fileUrl: '',
+            fileName: '',
+            fileType: ''
+        });
         renderCertifications();
     });
 
     document.getElementById('add-project-btn').addEventListener('click', () => {
-        projects.push({ title: '', description: '', techStack: [], liveLink: '', githubLink: '', thumbnailUrl: '', thumbnailName: '', thumbnailType: '' });
+        projects.push({
+            id: `proj-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            title: '',
+            description: '',
+            techStack: [],
+            liveLink: '',
+            githubLink: '',
+            thumbnailUrl: '',
+            thumbnailName: '',
+            thumbnailType: ''
+        });
         renderProjects();
     });
 
@@ -745,8 +996,18 @@
         if (!button) return;
         const action = button.dataset.action;
         if (action === 'remove-certification') {
-            certifications.splice(Number(button.dataset.index), 1);
+            const index = Number(button.dataset.index);
+            certifications.splice(index, 1);
             renderCertifications();
+            if (currentUserId) {
+                syncCertificationsToRTDB(currentUserId, certifications);
+            }
+        } else if (action === 'view-cert-file') {
+            const index = Number(button.dataset.index);
+            const cert = certifications[index];
+            if (cert && cert.fileUrl) {
+                openCertificateFile(cert.fileUrl);
+            }
         } else if (action === 'remove-project') {
             projects.splice(Number(button.dataset.index), 1);
             renderProjects();
@@ -797,14 +1058,21 @@
 
     document.getElementById('edit-profile-form').addEventListener('input', (event) => {
         const target = event.target;
-        if (target.dataset.field === 'name' && target.dataset.index !== undefined) {
-            certifications[Number(target.dataset.index)].name = target.value;
-        } else if (target.dataset.field === 'issuer' && target.dataset.index !== undefined) {
-            certifications[Number(target.dataset.index)].issuer = target.value;
-        } else if (target.dataset.field === 'earnedDate' && target.dataset.index !== undefined) {
-            certifications[Number(target.dataset.index)].earnedDate = target.value;
+        if ((target.dataset.field === 'title' || target.dataset.field === 'name') && target.dataset.index !== undefined) {
+            const idx = Number(target.dataset.index);
+            certifications[idx].title = target.value;
+            certifications[idx].name = target.value;
+        } else if ((target.dataset.field === 'issuingOrganization' || target.dataset.field === 'issuer') && target.dataset.index !== undefined) {
+            const idx = Number(target.dataset.index);
+            certifications[idx].issuingOrganization = target.value;
+            certifications[idx].issuer = target.value;
+        } else if ((target.dataset.field === 'issueDate' || target.dataset.field === 'earnedDate') && target.dataset.index !== undefined) {
+            const idx = Number(target.dataset.index);
+            certifications[idx].issueDate = target.value;
+            certifications[idx].earnedDate = target.value;
         } else if (target.dataset.field === 'verificationUrl' && target.dataset.index !== undefined) {
-            certifications[Number(target.dataset.index)].verificationUrl = target.value;
+            const idx = Number(target.dataset.index);
+            certifications[idx].verificationUrl = target.value;
         } else if (target.dataset.field === 'title' && target.dataset.index !== undefined) {
             projects[Number(target.dataset.index)].title = target.value;
         } else if (target.dataset.field === 'description' && target.dataset.index !== undefined) {
@@ -859,6 +1127,35 @@
         }
 
         try {
+            // 1. First fetch certifications from Realtime Database users/{userId}/certifications
+            let rtdbCertsLoaded = false;
+            try {
+                const certsSnap = await rtdbGet(rtdbChild(rtdbRef(rtdb), `users/${user.uid}/certifications`));
+                if (certsSnap.exists()) {
+                    const rawVal = certsSnap.val();
+                    const list = Array.isArray(rawVal) ? rawVal : (typeof rawVal === 'object' && rawVal !== null ? Object.values(rawVal) : []);
+                    if (list.length > 0) {
+                        certifications = list.map(c => ({
+                            id: String(c.id || Date.now()),
+                            title: c.title || c.name || '',
+                            name: c.title || c.name || '',
+                            issuingOrganization: c.issuingOrganization || c.issuer || '',
+                            issuer: c.issuingOrganization || c.issuer || '',
+                            issueDate: c.issueDate || c.earnedDate || '',
+                            earnedDate: c.issueDate || c.earnedDate || '',
+                            verificationUrl: c.verificationUrl || '',
+                            fileUrl: c.fileUrl || '',
+                            fileName: c.fileName || ''
+                        }));
+                        rtdbCertsLoaded = true;
+                        console.log('[EditProfile] Certifications loaded from Realtime Database:', certifications);
+                    }
+                }
+            } catch (rtdbErr) {
+                console.warn('[EditProfile] Error fetching certifications from Realtime Database:', rtdbErr);
+            }
+
+            // 2. Fetch User Profile Document from Firestore
             const userDocRef = doc(db, 'users', user.uid);
             const userSnap = await getDoc(userDocRef);
             if (userSnap.exists()) {
@@ -869,7 +1166,7 @@
                 document.getElementById('profile-linkedin-input').value = userData.linkedinUrl || '';
                 document.getElementById('profile-github-input').value = userData.githubUrl || '';
                 document.getElementById('profile-bio-input').value = userData.bio || userData.profileBio || '';
-                
+
                 const sideCollege = document.getElementById('side-nav-college');
                 const collegeVal = (userData.college || '').toString().trim();
                 if (sideCollege) {
@@ -877,20 +1174,40 @@
                         ? `<span>${collegeVal}</span>`
                         : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
                 }
-                
+
                 photoURL = userData.photoURL || userData.photoUrl || '';
                 if (photoURL) {
                     profilePicInput.value = photoURL;
                     avatarPreview.src = photoURL;
                     document.getElementById('top-nav-avatar').src = photoURL;
                 }
-                certifications = Array.isArray(userData.certifications) ? userData.certifications : [];
+
+                // If RTDB didn't have certifications, fallback to Firestore certifications
+                if (!rtdbCertsLoaded && Array.isArray(userData.certifications) && userData.certifications.length > 0) {
+                    certifications = userData.certifications.map(c => ({
+                        id: String(c.id || Date.now()),
+                        title: c.title || c.name || '',
+                        name: c.title || c.name || '',
+                        issuingOrganization: c.issuingOrganization || c.issuer || '',
+                        issuer: c.issuingOrganization || c.issuer || '',
+                        issueDate: c.issueDate || c.earnedDate || '',
+                        earnedDate: c.issueDate || c.earnedDate || '',
+                        verificationUrl: c.verificationUrl || '',
+                        fileUrl: c.fileUrl || '',
+                        fileName: c.fileName || ''
+                    }));
+                    // Sync loaded Firestore certs to RTDB
+                    syncCertificationsToRTDB(user.uid, certifications);
+                }
+
                 projects = Array.isArray(userData.projects) ? userData.projects : [];
                 skillsOffered = Array.isArray(userData.skillsOffered) ? userData.skillsOffered.filter(Boolean) : (Array.isArray(userData.skillsToTeach) ? userData.skillsToTeach.filter(Boolean) : []);
                 skillsWanted = Array.isArray(userData.skillsWanted) ? userData.skillsWanted.filter(Boolean) : (Array.isArray(userData.skillsToLearn) ? userData.skillsToLearn.filter(Boolean) : []);
+                
                 renderCertifications();
                 renderProjects();
                 renderSkills();
+
                 isFirstTimeSetup = !Boolean(userData.profileSetupComplete || userData.bio || userData.profileBio || userData.certifications?.length || userData.projects?.length || userData.skillsOffered?.length || userData.skillsToTeach?.length || userData.skillsWanted?.length || userData.skillsToLearn?.length);
                 if (isFirstTimeSetup) {
                     onboardingBanner.classList.remove('hidden');
@@ -910,10 +1227,17 @@
                         }
                     }, 250);
                 }
+            } else {
+                renderCertifications();
+                renderProjects();
+                renderSkills();
             }
         } catch (error) {
             console.error('[EditProfile] Error loading user document:', error);
             showToast('Error loading profile data from server', true);
+            renderCertifications();
+            renderProjects();
+            renderSkills();
         }
     });
 
@@ -939,6 +1263,23 @@
         }
 
         try {
+            // Clean and format certifications according to requirement:
+            // id, title, issuingOrganization, issueDate, verificationUrl, fileUrl
+            const cleanCertifications = certifications
+                .filter(item => item && (item.title || item.name || item.issuingOrganization || item.issuer || item.issueDate || item.earnedDate || item.verificationUrl || item.fileUrl))
+                .map(item => ({
+                    id: String(item.id || Date.now()),
+                    title: String(item.title || item.name || '').trim(),
+                    issuingOrganization: String(item.issuingOrganization || item.issuer || '').trim(),
+                    issueDate: String(item.issueDate || item.earnedDate || '').trim(),
+                    verificationUrl: String(item.verificationUrl || '').trim(),
+                    fileUrl: String(item.fileUrl || '').trim()
+                }));
+
+            // 1. Sync to Firebase Realtime Database users/{userId}/certifications
+            await syncCertificationsToRTDB(currentUserId, cleanCertifications);
+
+            // 2. Prepare full profile payload for Firestore and Local State
             const profilePayload = {
                 uid: currentUserId,
                 displayName: displayName,
@@ -949,7 +1290,7 @@
                 githubUrl: githubUrl,
                 bio: bio,
                 photoURL: photoURL || null,
-                certifications: certifications.filter(item => item.name || item.issuer || item.earnedDate || item.verificationUrl || item.fileUrl),
+                certifications: cleanCertifications,
                 projects: projects.filter(item => item.title || item.description || item.liveLink || item.githubLink || item.thumbnailUrl || (Array.isArray(item.techStack) && item.techStack.length)),
                 skillsOffered: skillsOffered.filter(Boolean),
                 skillsToTeach: skillsOffered.filter(Boolean),
@@ -961,13 +1302,25 @@
             };
 
             // Instant local update & broadcast across tabs/pages
-            window.SkillSwapState.saveUserProfile(profilePayload);
+            if (window.SkillSwapState?.saveUserProfile) {
+                window.SkillSwapState.saveUserProfile(profilePayload);
+            }
 
             if (auth.currentUser) {
-                await updateProfile(auth.currentUser, {
-                    displayName: displayName,
-                    photoURL: photoURL || null
-                });
+                // Ensure photoURL is only passed if it is a valid HTTP/HTTPS URL and <= 2048 chars for Firebase Auth.
+                // Never pass certificate data, base64 strings, or file URLs into updateProfile.
+                const authPhotoURL = (typeof photoURL === 'string' && photoURL.startsWith('http') && photoURL.length <= 2048)
+                    ? photoURL
+                    : (auth.currentUser.photoURL && auth.currentUser.photoURL.startsWith('http') ? auth.currentUser.photoURL : null);
+
+                try {
+                    await updateProfile(auth.currentUser, {
+                        displayName: displayName,
+                        photoURL: authPhotoURL
+                    });
+                } catch (authProfileErr) {
+                    console.warn('[EditProfile] updateProfile warning (ignored):', authProfileErr);
+                }
             }
             const userDocRef = doc(db, 'users', currentUserId);
             await setDoc(userDocRef, profilePayload, { merge: true });

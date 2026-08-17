@@ -285,6 +285,10 @@
  
 </p>
 <div class="flex flex-wrap gap-sm">
+<a id="message-user-btn" href="#" class="hidden inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-title-md text-title-md shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+Message / Swap
+</a>
 <a id="portfolio-edit-link" href="edit_profile.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-transparent text-primary font-title-md text-title-md border-2 border-primary hover:bg-primary-container/10 transition-all duration-300">
 <span class="material-symbols-outlined" data-icon="edit">edit</span>
 Edit Profile
@@ -372,7 +376,8 @@ Featured Projects
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { initializeFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeFirestore, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getDatabase, ref as rtdbRef, onValue as rtdbOnValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKoESaSoGW6YsNbrWZK9cJkZEmwzst4EU",
@@ -380,7 +385,8 @@ Featured Projects
         projectId: "skill-swap-13607",
         storageBucket: "skill-swap-13607.firebasestorage.app",
         messagingSenderId: "1084945079828",
-        appId: "1:1084945079828:web:2e4f6804050cd2c6a19101"
+        appId: "1:1084945079828:web:2e4f6804050cd2c6a19101",
+        databaseURL: "https://skill-swap-13607-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -388,6 +394,7 @@ Featured Projects
     const db = initializeFirestore(app, {
         experimentalForceLongPolling: true
     });
+    const rtdb = getDatabase(app);
 
     function getPreferredDisplayName(user, userData = null) {
         const candidates = [
@@ -413,7 +420,7 @@ Featured Projects
         return !hasBio && !hasCerts && !hasProjects && !hasSkills;
     }
 
-    function renderEmptyState(containerId, label, actionHref, actionText, icon) {
+    function renderEmptyState(containerId, label, actionHref, actionText, icon, isReadOnly = false) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = `
@@ -422,41 +429,127 @@ Featured Projects
                     <span class="material-symbols-outlined text-3xl text-primary">${icon}</span>
                 </div>
                 <p class="text-sm text-on-surface-variant">No ${label} added yet.</p>
-                <a href="${actionHref}" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ ${actionText}</a>
+                ${!isReadOnly ? `<a href="${actionHref}" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ ${actionText}</a>` : ''}
             </div>
         `;
     }
 
-    function renderCertifications(certifications) {
+    /**
+     * Converts a Base64 data string into a Blob for safe browser viewing
+     */
+    function base64ToBlob(base64Data, defaultContentType = 'application/pdf') {
+        let contentType = defaultContentType;
+        let base64String = base64Data;
+
+        if (base64Data.includes(';base64,')) {
+            const parts = base64Data.split(';base64,');
+            contentType = parts[0].replace('data:', '') || defaultContentType;
+            base64String = parts[1];
+        } else if (base64Data.startsWith('data:')) {
+            const parts = base64Data.split(',');
+            contentType = parts[0].replace('data:', '').split(';')[0] || defaultContentType;
+            base64String = parts[1] || '';
+        }
+
+        try {
+            const byteCharacters = atob(base64String.trim());
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                byteArrays.push(new Uint8Array(byteNumbers));
+            }
+
+            return new Blob(byteArrays, { type: contentType });
+        } catch (e) {
+            console.error('[Base64] Conversion error:', e);
+            return new Blob([base64Data], { type: contentType });
+        }
+    }
+
+    /**
+     * Safely opens a certificate file (handles both remote URLs and Base64/PDF data URIs)
+     */
+    function openCertificateFile(fileUrl) {
+        if (!fileUrl) return;
+        try {
+            if (fileUrl.startsWith('data:')) {
+                const blob = base64ToBlob(fileUrl);
+                const objectUrl = URL.createObjectURL(blob);
+                const newTab = window.open(objectUrl, '_blank');
+                if (!newTab) {
+                    const tempLink = document.createElement('a');
+                    tempLink.href = objectUrl;
+                    tempLink.target = '_blank';
+                    tempLink.rel = 'noopener noreferrer';
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                }
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+            } else {
+                window.open(fileUrl, '_blank', 'noopener,noreferrer');
+            }
+        } catch (err) {
+            console.error('[Certificate] Error opening file:', err);
+            window.open(fileUrl, '_blank');
+        }
+    }
+    window.openCertificateFile = openCertificateFile;
+
+    let activeCertifications = [];
+    let isViewingReadOnly = false;
+
+    function renderCertifications(certifications, readOnly = false) {
         const container = document.getElementById('certifications-list');
         if (!container) return;
         if (!Array.isArray(certifications) || certifications.length === 0) {
-            renderEmptyState('certifications-list', 'certifications', 'edit_profile.html?section=certifications', 'Add certification', 'workspace_premium');
+            renderEmptyState('certifications-list', 'certifications', 'edit_profile.html?section=certifications', 'Add certification', 'workspace_premium', readOnly);
             return;
         }
-        container.innerHTML = certifications.map((item) => {
-            const year = item.earnedDate ? new Date(item.earnedDate).getFullYear() : 'N/A';
-            const link = item.fileUrl || item.verificationUrl || null;
+        activeCertifications = certifications;
+        container.innerHTML = certifications.map((item, index) => {
+            const certTitle = item.title || item.name || 'Certification';
+            const certOrg = item.issuingOrganization || item.issuer || 'Issuer';
+            const certDate = item.issueDate || item.earnedDate;
+            const year = certDate ? new Date(certDate).getFullYear() : 'N/A';
+            const hasFile = Boolean(item.fileUrl || item.verificationUrl);
             const linkLabel = item.fileUrl ? 'View certificate' : 'View verification';
             return `
                 <div class="bg-gradient-to-br from-surface to-surface-container-high rounded-xl p-sm border border-surface-variant shadow-sm text-left group hover:-translate-y-1 transition-transform">
                     <div class="flex items-start justify-between gap-2">
                         <div>
-                            <h4 class="font-badge-text text-badge-text text-on-surface leading-tight">${item.name || 'Certification'}</h4>
-                            <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">${item.issuer || 'Issuer'} &bull; ${year}</p>
+                            <h4 class="font-badge-text text-badge-text text-on-surface leading-tight">${certTitle}</h4>
+                            <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">${certOrg} &bull; ${year}</p>
                         </div>
-                        ${link ? `<a href="${link}" target="_blank" rel="noopener noreferrer" class="rounded-full p-2 bg-primary/10 text-primary" title="${linkLabel}"><span class="material-symbols-outlined">open_in_new</span></a>` : '<span class="rounded-full p-2 bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined">description</span></span>'}
+                        ${hasFile ? `<button type="button" data-cert-index="${index}" class="cert-view-btn rounded-full p-2 bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer border-0" title="${linkLabel}"><span class="material-symbols-outlined">open_in_new</span></button>` : '<span class="rounded-full p-2 bg-surface-container-high text-on-surface-variant"><span class="material-symbols-outlined">description</span></span>'}
                     </div>
                 </div>
             `;
         }).join('');
+
+        container.onclick = (e) => {
+            const btn = e.target.closest('.cert-view-btn');
+            if (btn) {
+                const idx = Number(btn.dataset.certIndex);
+                const item = activeCertifications[idx];
+                if (item) {
+                    const targetUrl = item.fileUrl || item.verificationUrl;
+                    if (targetUrl) openCertificateFile(targetUrl);
+                }
+            }
+        };
     }
 
-    function renderProjects(projects) {
+    function renderProjects(projects, readOnly = false) {
         const container = document.getElementById('projects-list');
         if (!container) return;
         if (!Array.isArray(projects) || projects.length === 0) {
-            renderEmptyState('projects-list', 'projects', 'edit_profile.html?section=projects', 'Add project', 'folder_open');
+            renderEmptyState('projects-list', 'projects', 'edit_profile.html?section=projects', 'Add project', 'folder_open', readOnly);
             return;
         }
         container.innerHTML = projects.map((item) => {
@@ -486,15 +579,15 @@ Featured Projects
         }).join('');
     }
 
-    function renderSwaps(swaps) {
+    function renderSwaps(swaps, readOnly = false) {
         const container = document.getElementById('swaps-timeline-container');
         if (!container) return;
         if (!Array.isArray(swaps) || swaps.filter(Boolean).length === 0) {
             container.innerHTML = `
                 <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-6 text-center">
                     <span class="material-symbols-outlined text-3xl text-primary block mb-2">swap_horiz</span>
-                    <p class="text-sm text-on-surface-variant">No swaps yet &mdash; your completed and upcoming sessions will show up here.</p>
-                    <a href="match_discovery.html" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">Browse Matches</a>
+                    <p class="text-sm text-on-surface-variant">${readOnly ? 'No completed swaps recorded yet.' : 'No swaps yet &mdash; your completed and upcoming sessions will show up here.'}</p>
+                    ${!readOnly ? '<a href="match_discovery.html" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">Browse Matches</a>' : ''}
                 </div>`;
             return;
         }
@@ -506,6 +599,7 @@ Featured Projects
             const changedCredits = typeof swap.creditChange === 'number' ? `${swap.creditChange > 0 ? '+' : ''}${swap.creditChange} Credits` : '';
             const dateText = swap.date ? new Date(swap.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
             const isCompleted = status.toLowerCase().includes('complet');
+            const partnerUid = swap.targetUserId || '';
             return `
                 <div class="relative timeline-node ${isCompleted ? 'success' : ''} pl-lg">
                     <div class="bg-surface rounded-xl p-md border ${isCompleted ? 'border-surface-variant' : 'border-primary/20 ring-1 ring-primary/10'} shadow-sm hover:shadow-md transition-shadow">
@@ -524,7 +618,14 @@ Featured Projects
                                 </div>
                                 <span class="font-badge-text text-badge-text text-on-surface">with ${partner}</span>
                             </div>
-                            <span class="font-badge-text text-badge-text text-primary font-bold">${changedCredits}</span>
+                            <div class="flex items-center gap-2">
+                                ${partnerUid ? `
+                                    <a href="chat.html?targetUserId=${encodeURIComponent(partnerUid)}" class="px-3 py-1 rounded-lg gradient-primary text-white text-xs font-bold flex items-center gap-1 hover:scale-105 transition-all">
+                                        <span class="material-symbols-outlined text-[14px]">chat</span> Chat
+                                    </a>
+                                ` : ''}
+                                ${changedCredits ? `<span class="font-badge-text text-badge-text text-primary font-bold">${changedCredits}</span>` : ''}
+                            </div>
                         </div>
                         ${dateText ? `<p class="text-xs text-on-surface-variant mt-3">${dateText}</p>` : ''}
                     </div>
@@ -546,56 +647,87 @@ Featured Projects
             return;
         }
 
+        // Check if viewing another user's profile in READ-ONLY mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryUserId = urlParams.get('userId') || urlParams.get('uid');
+        isViewingReadOnly = Boolean(queryUserId && queryUserId !== user.uid);
+        const targetProfileUid = isViewingReadOnly ? queryUserId : user.uid;
+
         const portNameEl = document.getElementById('portfolio-name');
         const portAvatarEl = document.getElementById('portfolio-avatar');
         const topNavAvatarEl = document.getElementById('top-nav-avatar');
         const portBioEl = document.getElementById('portfolio-bio');
         const schoolBadgeEl = document.getElementById('portfolio-school');
         const completeProfileBtn = document.getElementById('complete-profile-btn');
+        const editProfileLink = document.getElementById('portfolio-edit-link');
+        const messageUserBtn = document.getElementById('message-user-btn');
 
-        const defaultName = getPreferredDisplayName(user);
-        if (portNameEl) portNameEl.textContent = defaultName;
-        if (portAvatarEl && user.photoURL) portAvatarEl.src = user.photoURL;
         if (topNavAvatarEl && user.photoURL) topNavAvatarEl.src = user.photoURL;
 
-        const userDocRef = doc(db, 'users', user.uid);
+        if (isViewingReadOnly) {
+            if (editProfileLink) editProfileLink.style.display = 'none';
+            if (completeProfileBtn) completeProfileBtn.style.display = 'none';
+            if (messageUserBtn) {
+                messageUserBtn.href = `chat.html?targetUserId=${encodeURIComponent(targetProfileUid)}`;
+                messageUserBtn.classList.remove('hidden');
+            }
+        } else {
+            if (editProfileLink) editProfileLink.style.display = 'inline-flex';
+            if (messageUserBtn) messageUserBtn.classList.add('hidden');
+        }
+
+        const userDocRef = doc(db, 'users', targetProfileUid);
         onSnapshot(userDocRef, (snap) => {
-            if (!snap.exists()) return;
+            if (!snap.exists()) {
+                if (portNameEl) portNameEl.textContent = 'Student Not Found';
+                if (portBioEl) portBioEl.textContent = 'This profile does not exist or has not been configured.';
+                return;
+            }
             const userData = snap.data();
-            const profileName = getPreferredDisplayName(user, userData);
+            const profileName = getPreferredDisplayName(isViewingReadOnly ? null : user, userData);
             if (portNameEl) portNameEl.textContent = profileName;
+            document.title = `${profileName}'s Portfolio - SkillSwap`;
 
             const bio = (userData.bio || userData.profileBio || '').toString().trim();
-            if (portBioEl) portBioEl.textContent = bio || 'No bio added yet. Click Edit Profile to introduce yourself.';
+            if (portBioEl) {
+                portBioEl.textContent = bio || (isViewingReadOnly ? 'No bio added yet.' : 'No bio added yet. Click Edit Profile to introduce yourself.');
+            }
 
             if (schoolBadgeEl) {
                 const college = (userData.college || '').trim();
                 const major = (userData.major || userData.department || '').trim();
-                schoolBadgeEl.textContent = college ? `${college}${major ? ' \u2022 ' + major : ''}` : 'Add your college in Edit Profile';
+                schoolBadgeEl.textContent = college ? `${college}${major ? ' \u2022 ' + major : ''}` : (isViewingReadOnly ? 'College not specified' : 'Add your college in Edit Profile');
             }
 
-            // Sidebar college/dept
+            // Sidebar college/dept (reflecting current user)
             const sideCollege = document.getElementById('side-nav-college');
             const sideDept = document.getElementById('side-nav-dept');
-            if (sideCollege) {
+            if (sideCollege && !isViewingReadOnly) {
                 const college = (userData.college || '').trim();
                 sideCollege.innerHTML = college
                     ? `<span>${college}</span>`
                     : `<a href="edit_profile.html" class="hover:underline opacity-60 text-sm">Add your college</a>`;
             }
-            if (sideDept) {
+            if (sideDept && !isViewingReadOnly) {
                 sideDept.textContent = (userData.major || userData.department || '').trim() || '\u2014';
             }
 
             if (userData.photoURL) {
                 if (portAvatarEl) portAvatarEl.src = userData.photoURL;
-                if (topNavAvatarEl) topNavAvatarEl.src = userData.photoURL;
+                if (!isViewingReadOnly && topNavAvatarEl) topNavAvatarEl.src = userData.photoURL;
             }
 
-            // LinkedIn button
+            // LinkedIn button - always show Connect button on profiles
             const connectBtn = document.getElementById('linkedin-connect-btn');
             if (connectBtn) {
-                connectBtn.href = userData.linkedinUrl || `https://www.linkedin.com`;
+                const liUrl = (userData.linkedinUrl || userData.linkedin || '').toString().trim();
+                if (liUrl) {
+                    connectBtn.href = liUrl.startsWith('http') ? liUrl : `https://${liUrl}`;
+                } else {
+                    connectBtn.href = 'https://www.linkedin.com';
+                }
+                connectBtn.classList.remove('hidden');
+                connectBtn.style.display = 'inline-flex';
             }
 
             // GitHub button
@@ -624,7 +756,7 @@ Featured Projects
                         <div class="rounded-xl border border-dashed border-outline-variant bg-surface-container-low/60 p-4 text-center col-span-full">
                             <span class="material-symbols-outlined text-3xl text-primary block mb-2">psychology</span>
                             <p class="text-sm text-on-surface-variant">No skills added yet.</p>
-                            <a href="edit_profile.html?section=skills" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ Add skills</a>
+                            ${!isViewingReadOnly ? '<a href="edit_profile.html?section=skills" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">+ Add skills</a>' : ''}
                         </div>`;
                     return;
                 }
@@ -666,27 +798,96 @@ Featured Projects
 
             renderPortfolioSkills(userData);
 
-            // Subscribe to real-time local state updates
-            window.addEventListener(window.SkillSwapState?.EVENT_KEY || 'userStateUpdated', (e) => {
-                if (e.detail) renderPortfolioSkills(e.detail);
-            });
+            // Subscribe to real-time local state updates for own profile only
+            if (!isViewingReadOnly) {
+                window.addEventListener(window.SkillSwapState?.EVENT_KEY || 'userStateUpdated', (e) => {
+                    if (e.detail) renderPortfolioSkills(e.detail);
+                });
+            }
 
             // Swaps
-            const swaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
+            const initialSwaps = Array.isArray(userData.swaps) ? userData.swaps.filter(Boolean) : [];
             const credits = typeof userData.credits === 'number' ? userData.credits : 0;
             const swapsCountEl = document.getElementById('portfolio-swaps-count');
             const creditsCountEl = document.getElementById('portfolio-credits-count');
-            if (swapsCountEl) swapsCountEl.textContent = String(swaps.length);
+            if (swapsCountEl) swapsCountEl.textContent = String(initialSwaps.length);
             if (creditsCountEl) creditsCountEl.textContent = credits.toLocaleString('en-IN');
-            renderSwaps(swaps);
+            renderSwaps(initialSwaps, isViewingReadOnly);
+
+            // Real-time synchronization with Realtime Database user_swaps (recent chat swaps)
+            try {
+                const userSwapsRef = rtdbRef(rtdb, `user_swaps/${targetProfileUid}`);
+                rtdbOnValue(userSwapsRef, async (snapshot) => {
+                    let rtdbSwapsList = [];
+                    if (snapshot.exists()) {
+                        const rawSwaps = snapshot.val();
+                        const entries = Object.entries(rawSwaps);
+                        entries.sort((a, b) => {
+                            const timeA = (a[1] && (a[1].updatedAt || a[1].timestamp)) || 0;
+                            const timeB = (b[1] && (b[1].updatedAt || b[1].timestamp)) || 0;
+                            return timeB - timeA;
+                        });
+
+                        const resolved = await Promise.all(entries.map(async ([partnerId, swapData]) => {
+                            const targetId = (swapData && swapData.targetUserId) ? swapData.targetUserId : partnerId;
+                            let partnerName = 'Student Peer';
+                            try {
+                                const pDoc = await getDoc(doc(db, 'users', targetId));
+                                if (pDoc.exists()) {
+                                    const pd = pDoc.data();
+                                    partnerName = pd.displayName || pd.name || 'Student Peer';
+                                }
+                            } catch (e) {
+                                console.warn('[Portfolio] Error fetching swap partner user doc:', e);
+                            }
+                            const rawTime = swapData ? (swapData.updatedAt || swapData.timestamp) : null;
+                            const dateVal = rawTime ? new Date(rawTime) : new Date();
+                            const statusVal = (swapData && swapData.status) ? swapData.status : 'Active';
+
+                            return {
+                                title: `Skill Swap Session`,
+                                status: statusVal,
+                                with: partnerName,
+                                partner: partnerName,
+                                description: (swapData && swapData.lastMessage) ? swapData.lastMessage : 'Recent chat exchange',
+                                date: dateVal,
+                                targetUserId: targetId
+                            };
+                        }));
+                        rtdbSwapsList = resolved;
+                    }
+
+                    const combinedSwaps = [...rtdbSwapsList, ...initialSwaps];
+                    if (swapsCountEl) swapsCountEl.textContent = String(combinedSwaps.length);
+                    renderSwaps(combinedSwaps, isViewingReadOnly);
+                });
+            } catch (rtdbErr) {
+                console.warn('[Portfolio] RTDB user_swaps sync error:', rtdbErr);
+            }
 
             // Certifications & Projects
-            renderCertifications(userData.certifications || []);
-            renderProjects(userData.projects || []);
+            renderCertifications(userData.certifications || [], isViewingReadOnly);
+            renderProjects(userData.projects || [], isViewingReadOnly);
+
+            // Real-time synchronization with Realtime Database certifications
+            try {
+                const certsRef = rtdbRef(rtdb, `users/${targetProfileUid}/certifications`);
+                rtdbOnValue(certsRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const raw = snapshot.val();
+                        const rtdbList = Array.isArray(raw) ? raw : (typeof raw === 'object' && raw !== null ? Object.values(raw) : []);
+                        if (rtdbList.length > 0) {
+                            renderCertifications(rtdbList, isViewingReadOnly);
+                        }
+                    }
+                });
+            } catch (rtdbErr) {
+                console.warn('[Portfolio] RTDB certs sync error:', rtdbErr);
+            }
 
             // Complete Profile CTA
             if (completeProfileBtn) {
-                completeProfileBtn.style.display = isProfileIncomplete(userData) ? 'inline-flex' : 'none';
+                completeProfileBtn.style.display = (!isViewingReadOnly && isProfileIncomplete(userData)) ? 'inline-flex' : 'none';
             }
         }, (error) => {
             console.error('[Portfolio] Error subscribing to user profile:', error);
